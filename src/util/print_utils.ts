@@ -1,6 +1,8 @@
 import chalk from "chalk";
+import ora, { Ora } from "ora";
 
 export default class PrintUtils {
+
     static info(print: string) {
         console.log(chalk.white(print));
     }
@@ -15,5 +17,41 @@ export default class PrintUtils {
 
     static error(print: string) {
         console.log(chalk.redBright(print));
+    }
+
+    static Spinner = class {
+        private spinner: Ora;
+
+        constructor(text: string | null | undefined) {
+            if (text == null || undefined) {
+                text = "";
+            }
+            
+            this.spinner = ora(text);
+        }
+
+        public start() {
+            this.spinner.start();
+        }
+
+        public stop() {
+            this.spinner.stop();
+        }
+
+        public error() {
+            this.spinner.fail();
+        }
+
+        public succeed() {
+            this.spinner.succeed();
+        }
+
+        public updateText(text: string) {
+            this.spinner.info(text);
+        }
+
+        public clear() {
+            this.spinner.clear();
+        }
     }
 }
