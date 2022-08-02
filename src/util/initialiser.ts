@@ -1,4 +1,6 @@
-import { existsSync, mkdirSync } from "fs";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
+import path from "path";
+import Mods from "../mods/mods.js";
 import PrintUtils from "./print_utils.js";
 
 export default class Initialiser {
@@ -27,10 +29,8 @@ export default class Initialiser {
     }
 
     private static isDirFabricServer(): boolean {
-        const workingDirectory = process.cwd();
-
-        const serverProperties = `${workingDirectory}/server.properties`;
-        const fabric = `${workingDirectory}/.fabric`;
+        const serverProperties = path.join("server.properties");
+        const fabric = path.join(".fabric");
 
         return existsSync(serverProperties) && existsSync(fabric);
     }
@@ -38,16 +38,15 @@ export default class Initialiser {
     private static setupFolderStructure(): boolean {
         if (!existsSync(this.getModManagerFolderPath())) {
             mkdirSync(this.getModManagerFolderPath());
+            writeFileSync(Mods.getModFilePath(), "[]");
             return true;
         } else {
             return false;
         }
     }
 
-    private static getModManagerFolderPath(): string {
-        const workingDirectory = process.cwd();
-
-        return `${workingDirectory}/${this.MOD_MANAGER_FOLDER}`;
+    public static getModManagerFolderPath(): string {
+        return path.join(this.MOD_MANAGER_FOLDER);
     }
 
 }
