@@ -42,6 +42,7 @@ export default class Mods {
                     try {
                         await source.install(id);
                         spinner.succeed(`Successfully installed ${mod}`);
+                        success = true;
                     } catch (e) {
                         // Log the error, and continue to next source
                         spinner.error(e);
