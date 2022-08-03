@@ -1,13 +1,18 @@
 #!/usr/bin/env node
-import { Command } from "commander";
+import {Command} from "commander";
 import InitCommand from "./commands/init_command.js";
 import InstallCommand from "./commands/install_command.js";
 import Subcommand from "./commands/subcommand.js";
 import Initialiser from "./util/initialiser.js";
 import PrintUtils from "./util/print_utils.js";
-//import PrettyError from "pretty-error";
+import path from "path";
+import {Logger, pino} from "pino"
+
 
 export default class ModManager {
+  public static logger: Logger | null = null;
+  private static readonly LOG_FILE: string = path.join(Initialiser.getModManagerFolderPath(), "logs", `${new Date().valueOf()}.log.json`);
+
   private static program: Command = new Command();
 
   private static subcommands: Array<Subcommand> = [
@@ -16,8 +21,10 @@ export default class ModManager {
   ];
 
   static init() {
-    //const pe = new PrettyError();
-    //pe.start();
+    if (Initialiser.isInitialised()) {
+      this.logger = ModManager.createLogger();
+    }
+
 
     this.program
       .name('mod-manager')
@@ -36,6 +43,16 @@ export default class ModManager {
     } else {
       PrintUtils.error("Mod Manager is not initialised");
     }
+  }
+
+  static createLogger(): Logger {
+    let logger = pino({base: {pid: undefined, hostname: undefined}}, pino.destination({dest: this.LOG_FILE}));
+    process.on("uncaughtException", error => {
+      logger.error(error);
+      setTimeout(() => process.exit(1), 1)
+    })
+
+    return logger;
   }
 }
 

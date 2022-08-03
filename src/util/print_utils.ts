@@ -1,21 +1,38 @@
 import chalk from "chalk";
 import ora, { Ora } from "ora";
+import ModManager from "../mod-manager.js";
 
 export default class PrintUtils {
 
     static info(print: string) {
+        if (ModManager.logger != null) {
+            ModManager.logger.info(print);
+        }
+
         console.log(chalk.white(print));
     }
 
     static warn(print: string) {
+        if (ModManager.logger != null) {
+            ModManager.logger.warn(print)
+        }
+
         console.log(chalk.yellowBright(print));
     }
 
     static success(print: string) {
+        if (ModManager.logger != null) {
+            ModManager.logger.info(print)
+        }
+
         console.log(chalk.greenBright(print));
     }
 
     static error(print: string) {
+        if (ModManager.logger != null) {
+            ModManager.logger.error(print);
+        }
+
         console.log(chalk.redBright(print));
     }
 
