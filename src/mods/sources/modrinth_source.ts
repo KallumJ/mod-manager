@@ -176,5 +176,4 @@ export default class ModrinthSource implements ModSource {
         return await response.data.title;
     }
 
-
 }

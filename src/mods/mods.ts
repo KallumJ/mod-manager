@@ -5,6 +5,7 @@ import ModrinthSource from "./sources/modrinth_source.js";
 import ModSource from "./sources/mod_source.js";
 import ModNotFoundError from "../errors/mod_not_found_error.js";
 import {readFileSync, writeFileSync} from "fs";
+import Util from "../util/util.js";
 
 
 export default class Mods {
@@ -24,7 +25,7 @@ export default class Mods {
                 spinner.start();
 
                 // Search for the mod
-                let id;
+                let id: string | undefined;
                 try {
                     id = await source.search(mod);
                 } catch (e) {
@@ -39,16 +40,22 @@ export default class Mods {
 
                 // If a mod is found, install it
                 if (id != undefined) {
-                    spinner.updateText(`Installing ${mod}...`)
-                    try {
-                        const modObj: Mod = await source.install(id);
-                        this.trackMod(modObj);
 
-                        spinner.succeed(`Successfully installed ${mod}`);
-                        success = true;
-                    } catch (e) {
-                        // Log the error, and continue to next source
-                        spinner.error(e);
+                    // If mod is not already installed
+                    if (!this.isModInstalled(id)) {
+                        spinner.updateText(`Installing ${mod}...`)
+                        try {
+                            const modObj: Mod = await source.install(id);
+                            this.trackMod(modObj);
+
+                            spinner.succeed(`Successfully installed ${mod}`);
+                            success = true;
+                        } catch (e) {
+                            // Log the error, and continue to next source
+                            spinner.error(e);
+                        }
+                    } else {
+                        spinner.error(`Mod ${mod} is already installed.`)
                     }
                 }
             }
@@ -60,14 +67,27 @@ export default class Mods {
     }
 
     private static trackMod(mod: Mod): void {
-        // Parse current file
-        const file = readFileSync(this.getModFilePath(), "utf-8");
-        const json: Array<Mod> = JSON.parse(file);
+        // Read current file
+        const mods = this.getTrackedMods();
 
         // Add mod
-        json.push(mod);
+        mods.push(mod);
 
         // Write list back to file
-        writeFileSync(this.getModFilePath(), JSON.stringify(json, null, 4));
+        this.writeFile(mods);
+    }
+
+    public static getTrackedMods(): Array<Mod> {
+        const file = readFileSync(this.getModFilePath(), "utf-8");
+        return JSON.parse(file);
+    }
+
+    public static writeFile(mods: Array<Mod>): void {
+        writeFileSync(this.getModFilePath(), JSON.stringify(mods, null, 4));
+    }
+
+    private static isModInstalled(id: string): boolean {
+        const modsFromSource: Array<Mod> = this.getTrackedMods().filter(mod => mod.id == id);
+        return !Util.isArrayEmpty(modsFromSource)
     }
 }
