@@ -28,7 +28,9 @@ export default class Mods {
                     if (e instanceof ModNotFoundError) {
                         PrintUtils.info(`Mod not found on ${source.getName()}`);
                     } else {
-                        throw e;
+                        PrintUtils.error(`An error occurred searching for ${mod} on ${source.getName()}. Skipping ${source.getName()}`, e)
+                        // Try the next source
+                        continue;
                     }
                 }
 
@@ -39,7 +41,8 @@ export default class Mods {
                         await source.install(id);
                         PrintUtils.success(`Successfully installed ${mod}`);
                     } catch (e) {
-                        PrintUtils.error(`An error occurred while downloading ${mod} from ${source.getName()}`, e);
+                        // Log the error, and continue to next source
+                        PrintUtils.error(e);
                     }
                 }
             }

@@ -52,9 +52,22 @@ export default class PrintUtils {
         console.log(chalk.greenBright(print));
     }
 
-    static error(print: string, err?: Error) {
-        console.log(chalk.redBright(print));
+    static error(print: string | Error, err?: Error) {
+        // If provided an error
+        if (print instanceof Error) {
+            // Output the error message
+            console.log(chalk.redBright(print.message));
 
+            // If no accompanying error to log was passed, log this one
+            if (err == null) {
+                err = print;
+            }
+        } else {
+            // If a string is provided, output to user
+            console.log(chalk.redBright(print));
+        }
+
+        // If there is an error to log, log it
         if (err instanceof Error) {
             if (ModManager.logger != null) {
                 ModManager.logger.error(err)
