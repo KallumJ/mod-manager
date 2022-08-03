@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "as-table": "^1.0.55",
     "axios": "^0.27.2",
     "chalk": "^5.0.1",
     "commander": "^9.4.0",

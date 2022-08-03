@@ -171,6 +171,70 @@ export default class ModrinthSource implements ModSource {
         return "Modrinth";
     }
 
+    /**
+     * Gets the name of the project with the provided id
+     * Example Shape of data from the query:
+     * {
+     * 	"id": "gvQqBUqZ",
+     * 	"slug": "lithium",
+     * 	"project_type": "mod",
+     * 	"team": "peSx5UYg",
+     * 	"title": "Lithium",
+     * 	"description": "No-compromises game logic/server optimization mod",
+     * 	"body": "...",
+     * 	"body_url": "https://cdn.modrinth.com/data/gvQqBUqZ/description.md",
+     * 	"published": "2021-01-03T00:56:52.292581Z",
+     * 	"updated": "2022-07-29T22:18:05.703354Z",
+     * 	"approved": "2021-01-03T00:56:52.292581Z",
+     * 	"status": "approved",
+     * 	"moderator_message": null,
+     * 	"license": {
+     * 		"id": "lgpl-3",
+     * 		"name": "GNU Lesser General Public License v3",
+     * 		"url": "https://cdn.modrinth.com/licenses/lgpl-3.txt"
+     * 	},
+     * 	"client_side": "optional",
+     * 	"server_side": "optional",
+     * 	"downloads": 225038,
+     * 	"followers": 1872,
+     * 	"categories": [
+     * 		"optimization"
+     * 	],
+     * 	"additional_categories": [],
+     * 	"versions": [
+     * 		"2w527DB2",
+     * 		"ZRR9yqHD",
+     * 		"aZ0JFf08",
+     * 		"cTZv31gu",
+     * 		"igqdFUYG",
+     * 		"nVR7Q63z",
+     * 		"ouTdXXWj",
+     * 		"pGhOMdTm",
+     * 		"pHl1Vi6k",
+     * 		"pXdccFQf",
+     * 		"rvsW1zhb",
+     * 		"sIKhU9s4",
+     * 		"5fmGl08Y",
+     * 		"7jxErppe",
+     * 		"EhG1mQzx",
+     * 		"Ehsd7YUl",
+     * 		"FHFKMKeu",
+     * 		"Le0tKjFX",
+     * 		"2CbyxeU0",
+     * 		"MoF1cn6g",
+     * 		"2aoHIXuK"
+     * 	],
+     * 	"icon_url": "https://cdn.modrinth.com/data/gvQqBUqZ/icon.png",
+     * 	"issues_url": "https://github.com/jellysquid3/lithium-fabric/issues",
+     * 	"source_url": "https://github.com/jellysquid3/lithium-fabric",
+     * 	"wiki_url": null,
+     * 	"discord_url": "https://jellysquid.me/discord",
+     * 	"donation_urls": [],
+     * 	"gallery": []
+     * }
+     * @param id the id to get the name of
+     * @return The found project name
+     */
     async getProjectName(id: string): Promise<string> {
         const response = await axios.get(format(ModrinthSource.PROJECT_URL, id));
         return await response.data.title;

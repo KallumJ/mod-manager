@@ -7,6 +7,7 @@ import Initialiser from "./util/initialiser.js";
 import PrintUtils from "./util/print_utils.js";
 import path from "path";
 import {Logger, pino} from "pino"
+import {ListCommand} from "./commands/list_command.js";
 
 
 export default class ModManager {
@@ -17,7 +18,8 @@ export default class ModManager {
 
     private static subcommands: Array<Subcommand> = [
         new InitCommand(),
-        new InstallCommand()
+        new InstallCommand(),
+        new ListCommand()
     ];
 
     static init() {
