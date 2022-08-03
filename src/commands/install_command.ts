@@ -1,4 +1,4 @@
-import { Command } from "commander";
+import {Command} from "commander";
 import Subcommand from "./subcommand.js"
 import ModManager from "../mod-manager.js";
 import Mods from "../mods/mods.js";

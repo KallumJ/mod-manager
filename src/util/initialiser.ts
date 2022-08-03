@@ -35,6 +35,10 @@ export default class Initialiser {
         return existsSync(this.getModManagerFolderPath());
     }
 
+    public static getModManagerFolderPath(): string {
+        return path.join(this.MOD_MANAGER_FOLDER);
+    }
+
     private static isDirFabricServer(): boolean {
         const serverProperties = path.join("server.properties");
         const fabric = path.join(".fabric");
@@ -51,10 +55,6 @@ export default class Initialiser {
         } else {
             return false;
         }
-    }
-
-    public static getModManagerFolderPath(): string {
-        return path.join(this.MOD_MANAGER_FOLDER);
     }
 
 }

@@ -10,50 +10,49 @@ import {Logger, pino} from "pino"
 
 
 export default class ModManager {
-  public static logger: Logger | null = null;
-  private static readonly LOG_FILE: string = path.join(Initialiser.getModManagerFolderPath(), "logs", `${new Date().valueOf()}.log.json`);
+    public static logger: Logger | null = null;
+    private static readonly LOG_FILE: string = path.join(Initialiser.getModManagerFolderPath(), "logs", `${new Date().valueOf()}.log.json`);
 
-  private static program: Command = new Command();
+    private static program: Command = new Command();
 
-  private static subcommands: Array<Subcommand> = [
-    new InitCommand(),
-    new InstallCommand()
-  ];
+    private static subcommands: Array<Subcommand> = [
+        new InitCommand(),
+        new InstallCommand()
+    ];
 
-  static init() {
-    if (Initialiser.isInitialised()) {
-      this.logger = ModManager.createLogger();
+    static init() {
+        if (Initialiser.isInitialised()) {
+            this.logger = ModManager.createLogger();
+        }
+
+        this.program
+            .name('mod-manager')
+            .description('A package (mod) manager for Fabric Minecraft Servers');
+
+        for (const command of this.subcommands) {
+            command.registerCommand(this.program);
+        }
+
+        this.program.parse();
     }
 
-
-    this.program
-      .name('mod-manager')
-      .description('A package (mod) manager for Fabric Minecraft Servers');
-
-    for (const command of this.subcommands) {
-      command.registerCommand(this.program);
+    static execute(callback: () => any): void {
+        if (Initialiser.isInitialised()) {
+            callback();
+        } else {
+            PrintUtils.error("Mod Manager is not initialised");
+        }
     }
 
-    this.program.parse();
-  }
+    static createLogger(): Logger {
+        let logger = pino({base: {pid: undefined, hostname: undefined}}, pino.destination({dest: this.LOG_FILE}));
+        process.on("uncaughtException", error => {
+            logger.error(error);
+            setTimeout(() => process.exit(1), 1)
+        })
 
-  static execute(callback: () => any): void {
-    if (Initialiser.isInitialised()) {
-      callback();
-    } else {
-      PrintUtils.error("Mod Manager is not initialised");
+        return logger;
     }
-  }
-
-  static createLogger(): Logger {
-    let logger = pino({base: {pid: undefined, hostname: undefined}}, pino.destination({dest: this.LOG_FILE}));
-    process.on("uncaughtException", error => {
-      logger.error(error);
-      setTimeout(() => process.exit(1), 1)
-    })
-
-    return logger;
-  }
 }
 
 ModManager.init();
