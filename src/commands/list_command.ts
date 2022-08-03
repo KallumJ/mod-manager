@@ -13,12 +13,20 @@ export class ListCommand implements Subcommand {
             .description("Lists installed mods")
             .action(() => {
                 ModManager.execute(() => {
-                    let tableFunc = asTable.configure ({
+                    const tableFunc = asTable.configure ({
                         title: x => chalk.cyanBright(Util.stringPrettyify(x)),
                         delimiter: chalk.blueBright(' | '),
                         dash: chalk.blueBright('-')
                     })
-                    PrintUtils.info(tableFunc(Mods.getTrackedMods()))
+
+                    const mods = Mods.getTrackedMods();
+
+                    if (!Util.isArrayEmpty(mods)) {
+                        PrintUtils.info(tableFunc(Mods.getTrackedMods()))
+                    } else {
+                        PrintUtils.warn("There are no mods installed yet! Try mod-manager install -h to figure out more!")
+                    }
+
                 })
             })
     }
