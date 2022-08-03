@@ -146,6 +146,7 @@ export default class ModrinthSource implements ModSource {
 
         const fileName = latestFile.filename;
         const url = latestFile.url;
+        const modVersion = results[0].version_number;
 
         const task: DownloadTask = {
             fileName: fileName,
@@ -159,6 +160,7 @@ export default class ModrinthSource implements ModSource {
                 name: await this.getProjectName(id),
                 id: id,
                 fileName: fileName,
+                version: modVersion,
                 source: this.getSourceName()
             };
 

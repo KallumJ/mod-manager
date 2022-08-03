@@ -3,6 +3,7 @@ declare global {
         id: string
         name: string
         fileName: string,
+        version: string
         source: string,
     }
 }
