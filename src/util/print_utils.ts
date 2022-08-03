@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import ora, {Ora} from "ora";
+import ModManager from "../mod-manager.js";
 
 export default class PrintUtils {
 
@@ -51,7 +52,13 @@ export default class PrintUtils {
         console.log(chalk.greenBright(print));
     }
 
-    static error(print: string) {
+    static error(print: string, err?: Error) {
         console.log(chalk.redBright(print));
+
+        if (err instanceof Error) {
+            if (ModManager.logger != null) {
+                ModManager.logger.error(err)
+            }
+        }
     }
 }
