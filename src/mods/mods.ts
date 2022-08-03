@@ -4,6 +4,7 @@ import PrintUtils from "../util/print_utils.js";
 import ModrinthSource from "./sources/modrinth_source.js";
 import ModSource from "./sources/mod_source.js";
 import ModNotFoundError from "../errors/mod_not_found_error.js";
+import {readFileSync, writeFileSync} from "fs";
 
 
 export default class Mods {
@@ -28,9 +29,9 @@ export default class Mods {
                     id = await source.search(mod);
                 } catch (e) {
                     if (e instanceof ModNotFoundError) {
-                        spinner.updateText(`Mod not found on ${source.getName()}`)
+                        spinner.updateText(`Mod not found on ${source.getSourceName()}`)
                     } else {
-                        spinner.error(`An error occurred searching for ${mod} on ${source.getName()}. Skipping ${source.getName()}`)
+                        spinner.error(`An error occurred searching for ${mod} on ${source.getSourceName()}. Skipping ${source.getSourceName()}`)
                         // Try the next source
                         continue;
                     }
@@ -40,7 +41,9 @@ export default class Mods {
                 if (id != undefined) {
                     spinner.updateText(`Installing ${mod}...`)
                     try {
-                        await source.install(id);
+                        const modObj: Mod = await source.install(id);
+                        this.trackMod(modObj);
+
                         spinner.succeed(`Successfully installed ${mod}`);
                         success = true;
                     } catch (e) {
@@ -54,5 +57,17 @@ export default class Mods {
 
     public static getModFilePath(): string {
         return path.join(Initialiser.getModManagerFolderPath(), this.MOD_FILE);
+    }
+
+    private static trackMod(mod: Mod): void {
+        // Parse current file
+        const file = readFileSync(this.getModFilePath(), "utf-8");
+        const json: Array<Mod> = JSON.parse(file);
+
+        // Add mod
+        json.push(mod);
+
+        // Write list back to file
+        writeFileSync(this.getModFilePath(), JSON.stringify(json, null, 4));
     }
 }

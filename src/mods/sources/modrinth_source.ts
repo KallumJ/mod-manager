@@ -12,6 +12,7 @@ export default class ModrinthSource implements ModSource {
     private static readonly BASE_URL: string = "https://api.modrinth.com/v2";
     private static readonly SEARCH_URL: string = ModrinthSource.BASE_URL + "/search";
     private static readonly INSTALL_URL: string = ModrinthSource.BASE_URL + "/project/%s/version";
+    private static readonly PROJECT_URL: string = ModrinthSource.BASE_URL + "/project/%s";
 
     /**
      * Searches Modrinth for the specified query
@@ -79,7 +80,7 @@ export default class ModrinthSource implements ModSource {
         const results = await response.data.hits;
 
         if (Util.isArrayEmpty(results)) {
-            throw new ModNotFoundError(`Mod ${query} could not be found on ${this.getName()}`);
+            throw new ModNotFoundError(`Mod ${query} could not be found on ${this.getSourceName()}`);
         }
 
         return results[0].project_id;
@@ -126,7 +127,7 @@ export default class ModrinthSource implements ModSource {
      * @throws DownloadError if an error occurs when downloading
      * @throws ModNotFoundError if there are no versions available for the current Minecraft Version
      */
-    async install(id: string): Promise<void> {
+    async install(id: string): Promise<Mod> {
         const mcVersion = await MinecraftUtils.getCurrentMinecraftVersion();
 
         const params = {
@@ -138,25 +139,41 @@ export default class ModrinthSource implements ModSource {
         const results = await response.data;
 
         if (Util.isArrayEmpty(results)) {
-            throw new ModNotFoundError(`Mod with id ${id} has no available versions on ${this.getName()} for Minecraft version ${mcVersion}`);
+            throw new ModNotFoundError(`Mod with id ${id} has no available versions on ${this.getSourceName()} for Minecraft version ${mcVersion}`);
         }
 
         const latestFile = results[0].files[0];
 
+        const fileName = latestFile.filename;
+        const url = latestFile.url;
+
         const task: DownloadTask = {
-            fileName: latestFile.filename,
-            url: latestFile.url
+            fileName: fileName,
+            url: url
         }
 
         try {
             FileDownloader.downloadMod(task)
+
+            return {
+                name: await this.getProjectName(id),
+                id: id,
+                fileName: fileName,
+                source: this.getSourceName()
+            };
+
         } catch (e) {
-            throw new DownloadError(`An error occurred downloading mod with id ${id} from ${this.getName()}`)
+            throw new DownloadError(`An error occurred downloading mod with id ${id} from ${this.getSourceName()}`)
         }
     }
 
-    getName(): string {
+    getSourceName(): string {
         return "Modrinth";
+    }
+
+    async getProjectName(id: string): Promise<string> {
+        const response = await axios.get(format(ModrinthSource.PROJECT_URL, id));
+        return await response.data.title;
     }
 
 

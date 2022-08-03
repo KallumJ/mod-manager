@@ -1,7 +1,9 @@
 export default interface ModSource {
     search(query: string): Promise<string>;
 
-    install(id: string): Promise<void>;
+    install(id: string): Promise<Mod>;
 
-    getName(): string;
+    getSourceName(): string;
+
+    getProjectName(id: string): Promise<string>;
 }
