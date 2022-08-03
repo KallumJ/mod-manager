@@ -66,7 +66,7 @@ export default class ModrinthSource implements ModSource {
      * @throws ModNotFoundError if the query returns no results.
      * @returns The mod id of the found mod
      */
-    async search(query: string): Promise<string> | never {
+    async search(query: string): Promise<string> {
         const mcVersion = await MinecraftUtils.getCurrentMinecraftVersion();
 
         const params = {

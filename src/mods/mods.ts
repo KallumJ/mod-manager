@@ -19,16 +19,18 @@ export default class Mods {
         for (const source of this.MOD_SOURCES) {
             // If we have not yet successfully installed the queried mod
             if (!success) {
-                PrintUtils.info(`Searching for ${mod}...`);
+                const spinner = new PrintUtils.Spinner(`Searching for ${mod}...`);
+                spinner.start();
+
                 // Search for the mod
                 let id;
                 try {
                     id = await source.search(mod);
                 } catch (e) {
                     if (e instanceof ModNotFoundError) {
-                        PrintUtils.info(`Mod not found on ${source.getName()}`);
+                        spinner.updateText(`Mod not found on ${source.getName()}`)
                     } else {
-                        PrintUtils.error(`An error occurred searching for ${mod} on ${source.getName()}. Skipping ${source.getName()}`, e)
+                        spinner.error(`An error occurred searching for ${mod} on ${source.getName()}. Skipping ${source.getName()}`)
                         // Try the next source
                         continue;
                     }
@@ -36,13 +38,13 @@ export default class Mods {
 
                 // If a mod is found, install it
                 if (id != undefined) {
-                    PrintUtils.info(`Installing ${mod}...`);
+                    spinner.updateText(`Installing ${mod}...`)
                     try {
                         await source.install(id);
-                        PrintUtils.success(`Successfully installed ${mod}`);
+                        spinner.succeed(`Successfully installed ${mod}`);
                     } catch (e) {
                         // Log the error, and continue to next source
-                        PrintUtils.error(e);
+                        spinner.error(e);
                     }
                 }
             }

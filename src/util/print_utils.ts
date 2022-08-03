@@ -23,16 +23,23 @@ export default class PrintUtils {
             this.spinner.stop();
         }
 
-        public error() {
-            this.spinner.fail();
+        public error(print: string | Error) {
+            if (print instanceof Error) {
+                this.spinner.fail(print.message)
+                if (ModManager.logger != null) {
+                    ModManager.logger.error(print)
+                }
+            } else {
+                this.spinner.fail(print);
+            }
         }
 
-        public succeed() {
-            this.spinner.succeed();
+        public succeed(print: string) {
+            this.spinner.succeed(print);
         }
 
         public updateText(text: string) {
-            this.spinner.info(text);
+            this.spinner.start(text);
         }
 
         public clear() {
