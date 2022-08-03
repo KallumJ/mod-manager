@@ -1,6 +1,5 @@
 import { Command } from "commander";
 
-export default abstract class Subcommand {
-    abstract registerCommand(program: Command): void;
-    abstract execute(): void;
+export default interface Subcommand {
+    registerCommand(program: Command): void;
 }
