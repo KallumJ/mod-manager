@@ -19,8 +19,9 @@ export default class PrintUtils {
             this.spinner.start();
         }
 
-        public stop() {
-            this.spinner.stop();
+        public stop(print: string) {
+            this.updateText(print);
+            this.spinner.stopAndPersist();
         }
 
         public error(print: string | Error) {

@@ -30,7 +30,7 @@ export default class Mods {
                     id = await source.search(mod);
                 } catch (e) {
                     if (e instanceof ModNotFoundError) {
-                        spinner.updateText(`Mod not found on ${source.getSourceName()}`)
+                        spinner.stop(`Mod not found on ${source.getSourceName()}`)
                     } else {
                         spinner.error(`An error occurred searching for ${mod} on ${source.getSourceName()}. Skipping ${source.getSourceName()}`)
                         // Try the next source
