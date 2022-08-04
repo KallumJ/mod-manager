@@ -119,7 +119,7 @@ export default class Mods {
         return mod1.id === mod2.id;
     }
 
-    static markEssential(mod: string) {
+    static toggleEssential(mod: string) {
         const modToMark = this.findMod(mod);
 
         if (modToMark != undefined) {
@@ -127,13 +127,16 @@ export default class Mods {
             // Remove mod from list
             mods = mods.filter(item => !Mods.areModsEqual(item, modToMark));
 
-            // Mark is as essential, and read it
-            modToMark.essential = true;
+            // Toggle essnetial status, and write back to file
+            modToMark.essential = !modToMark.essential;
             mods.push(modToMark)
-
             this.writeFile(mods);
 
-            PrintUtils.success(`Marked ${modToMark.name} as essential`)
+            if (modToMark.essential) {
+                PrintUtils.success(`Marked ${modToMark.name} as essential`)
+            } else {
+                PrintUtils.success(`Marked ${modToMark.name} as inessential`)
+            }
         } else {
             PrintUtils.error(`${mod} not found.`)
         }
