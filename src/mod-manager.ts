@@ -10,6 +10,7 @@ import {Logger, pino} from "pino"
 import {ListCommand} from "./commands/list_command.js";
 import UninstallCommand from "./commands/uninstall_command.js";
 import EssentialCommand from "./commands/essential_command.js";
+import {readFileSync, unlinkSync} from "fs";
 
 
 export default class ModManager {
@@ -55,6 +56,14 @@ export default class ModManager {
         process.on("uncaughtException", error => {
             PrintUtils.error(error.message, error);
             setTimeout(() => process.exit(1), 1)
+        })
+
+        // If no errors are logged, cleanup the log file when the process exits
+        process.on("exit", () => {
+            // If file is only whitespace, i.e. blank
+            if (!readFileSync(this.LOG_FILE, "utf-8").trim().length) {
+                unlinkSync(this.LOG_FILE)
+            }
         })
 
         return logger;
