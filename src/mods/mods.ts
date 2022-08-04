@@ -4,12 +4,13 @@ import PrintUtils from "../util/print_utils.js";
 import ModrinthSource from "./sources/modrinth_source.js";
 import ModSource from "./sources/mod_source.js";
 import ModNotFoundError from "../errors/mod_not_found_error.js";
-import {readFileSync, writeFileSync} from "fs";
+import {readFileSync, unlinkSync, writeFileSync} from "fs";
 import Util from "../util/util.js";
 
 
 export default class Mods {
     public static readonly MOD_FILE = "mods.json";
+    public static readonly MODS_FOLDER_PATH: string = path.join("mods");
     private static readonly MOD_SOURCES: Array<ModSource> = [
         new ModrinthSource()
     ];
@@ -40,22 +41,23 @@ export default class Mods {
 
                 // If a mod is found, install it
                 if (id != undefined) {
+                    const projectName = await source.getProjectName(id);
 
                     // If mod is not already installed
                     if (!this.isModInstalled(id)) {
-                        spinner.updateText(`Installing ${mod}...`)
+                        spinner.updateText(`Installing ${projectName}...`)
                         try {
                             const modObj: Mod = await source.install(id);
                             this.trackMod(modObj);
 
-                            spinner.succeed(`Successfully installed ${mod}`);
+                            spinner.succeed(`Successfully installed ${projectName}`);
                             success = true;
                         } catch (e) {
                             // Log the error, and continue to next source
                             spinner.error(e);
                         }
                     } else {
-                        spinner.error(`Mod ${mod} is already installed.`)
+                        spinner.error(`Mod ${projectName} is already installed.`)
                     }
                 }
             }
@@ -87,7 +89,43 @@ export default class Mods {
     }
 
     private static isModInstalled(id: string): boolean {
-        const modsFromSource: Array<Mod> = this.getTrackedMods().filter(mod => mod.id == id);
-        return !Util.isArrayEmpty(modsFromSource)
+        const modsWithId: Array<Mod> = this.getTrackedMods().filter(mod => mod.id == id);
+        return !Util.isArrayEmpty(modsWithId)
+    }
+
+    static uninstall(mod: string) {
+        let mods: Array<Mod> = this.getTrackedMods();
+
+        // Replace underscores with spaces
+        mod = mod.replaceAll("_", " ");
+
+        // Find mod to uninstall
+        const spinner = new PrintUtils.Spinner(`Uninstalling ${mod}...`)
+        let modToUninstall: Mod | undefined = undefined;
+        for (let modEle of mods) {
+            const id = modEle.id.toLowerCase();
+            const name = modEle.name.toLowerCase();
+
+            const query = mod.toLowerCase();
+            if (id == query || name == query) {
+                modToUninstall = modEle;
+                break;
+            }
+        }
+
+        // IF a matching mod is found, remove it
+        if (modToUninstall != undefined) {
+            // Remove mod from list and uninstall it
+            unlinkSync(path.join(this.MODS_FOLDER_PATH, modToUninstall.fileName));
+            mods = mods.filter(item => item !== modToUninstall);
+            this.writeFile(mods);
+            spinner.succeed(`${modToUninstall.name} successfully uninstalled!`)
+        } else {
+            spinner.error(`${mod} was not found.`)
+        }
+
+
+
+
     }
 }

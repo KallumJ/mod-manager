@@ -8,6 +8,7 @@ import PrintUtils from "./util/print_utils.js";
 import path from "path";
 import {Logger, pino} from "pino"
 import {ListCommand} from "./commands/list_command.js";
+import UninstallCommand from "./commands/uninstall_command.js";
 
 
 export default class ModManager {
@@ -19,7 +20,8 @@ export default class ModManager {
     private static subcommands: Array<Subcommand> = [
         new InitCommand(),
         new InstallCommand(),
-        new ListCommand()
+        new ListCommand(),
+        new UninstallCommand()
     ];
 
     static init() {
