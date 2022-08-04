@@ -52,7 +52,17 @@ export default class ModManager {
     }
 
     static createLogger(): Logger {
-        let logger = pino({base: {pid: undefined, hostname: undefined}}, pino.destination({dest: this.LOG_FILE}));
+        let logger = pino({
+            base: {
+                pid: undefined,
+                hostname: undefined}
+        },
+            pino.destination({
+                dest: this.LOG_FILE,
+                sync: true
+            })
+        );
+
         process.on("uncaughtException", error => {
             PrintUtils.error(error.message, error);
             setTimeout(() => process.exit(1), 1)
