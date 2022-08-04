@@ -9,6 +9,7 @@ import path from "path";
 import {Logger, pino} from "pino"
 import {ListCommand} from "./commands/list_command.js";
 import UninstallCommand from "./commands/uninstall_command.js";
+import EssentialCommand from "./commands/essential_command.js";
 
 
 export default class ModManager {
@@ -21,7 +22,8 @@ export default class ModManager {
         new InitCommand(),
         new InstallCommand(),
         new ListCommand(),
-        new UninstallCommand()
+        new UninstallCommand(),
+        new EssentialCommand()
     ];
 
     static init() {

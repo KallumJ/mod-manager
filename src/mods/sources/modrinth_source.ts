@@ -124,10 +124,11 @@ export default class ModrinthSource implements ModSource {
      * 	}
      * ]
      * @param id the id of the mod
+     * @param essential whether this mod is essential or not
      * @throws DownloadError if an error occurs when downloading
      * @throws ModNotFoundError if there are no versions available for the current Minecraft Version
      */
-    async install(id: string): Promise<Mod> {
+    async install(id: string, essential: boolean): Promise<Mod> {
         const mcVersion = await MinecraftUtils.getCurrentMinecraftVersion();
 
         const params = {
@@ -161,7 +162,8 @@ export default class ModrinthSource implements ModSource {
                 id: id,
                 fileName: fileName,
                 version: modVersion,
-                source: this.getSourceName()
+                source: this.getSourceName(),
+                essential: essential
             };
 
         } catch (e) {

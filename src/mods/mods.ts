@@ -15,7 +15,7 @@ export default class Mods {
         new ModrinthSource()
     ];
 
-    public static async install(mod: string): Promise<void> {
+    public static async install(mod: string, essential: boolean): Promise<void> {
         let success: boolean = false;
 
         // Go through each mod source
@@ -47,7 +47,7 @@ export default class Mods {
                     if (!this.isModInstalled(id)) {
                         spinner.updateText(`Installing ${projectName}...`)
                         try {
-                            const modObj: Mod = await source.install(id);
+                            const modObj: Mod = await source.install(id, essential);
                             this.trackMod(modObj);
 
                             spinner.succeed(`Successfully installed ${projectName}`);
@@ -94,30 +94,17 @@ export default class Mods {
     }
 
     static uninstall(mod: string) {
-        let mods: Array<Mod> = this.getTrackedMods();
-
-        // Replace underscores with spaces
-        mod = mod.replaceAll("_", " ");
-
         // Find mod to uninstall
         const spinner = new PrintUtils.Spinner(`Uninstalling ${mod}...`)
-        let modToUninstall: Mod | undefined = undefined;
-        for (let modEle of mods) {
-            const id = modEle.id.toLowerCase();
-            const name = modEle.name.toLowerCase();
 
-            const query = mod.toLowerCase();
-            if (id == query || name == query) {
-                modToUninstall = modEle;
-                break;
-            }
-        }
-
+        const modToUninstall = this.findMod(mod);
         // IF a matching mod is found, remove it
         if (modToUninstall != undefined) {
+            let mods: Array<Mod> = this.getTrackedMods();
+
             // Remove mod from list and uninstall it
             unlinkSync(path.join(this.MODS_FOLDER_PATH, modToUninstall.fileName));
-            mods = mods.filter(item => item !== modToUninstall);
+            mods = mods.filter(item => !Mods.areModsEqual(item, modToUninstall));
             this.writeFile(mods);
             spinner.succeed(`${modToUninstall.name} successfully uninstalled!`)
         } else {
@@ -127,5 +114,46 @@ export default class Mods {
 
 
 
+    }
+    static areModsEqual(mod1: Mod, mod2: Mod): boolean {
+        return mod1.id === mod2.id;
+    }
+
+    static markEssential(mod: string) {
+        const modToMark = this.findMod(mod);
+
+        if (modToMark != undefined) {
+            let mods = this.getTrackedMods();
+            // Remove mod from list
+            mods = mods.filter(item => !Mods.areModsEqual(item, modToMark));
+
+            // Mark is as essential, and read it
+            modToMark.essential = true;
+            mods.push(modToMark)
+
+            this.writeFile(mods);
+
+            PrintUtils.success(`Marked ${modToMark.name} as essential`)
+        } else {
+            PrintUtils.error(`${mod} not found.`)
+        }
+    }
+
+    private static findMod(mod: string): Mod | undefined {
+        // Replace underscores with spaces
+        mod = mod.replaceAll("_", " ");
+
+        let mods: Array<Mod> = this.getTrackedMods();
+        for (let modEle of mods) {
+            const id = modEle.id.toLowerCase();
+            const name = modEle.name.toLowerCase();
+
+            const query = mod.toLowerCase();
+            if (id == query || Util.areStringsSimilar(mod, name)) {
+                return modEle;
+            }
+        }
+
+        return undefined;
     }
 }

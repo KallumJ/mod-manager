@@ -3,18 +3,18 @@ import {Command} from "commander";
 import ModManager from "../mod-manager.js";
 import Mods from "../mods/mods.js";
 
-export default class UninstallCommand implements Subcommand {
+export default class EssentialCommand implements Subcommand {
     registerCommand(program: Command): void {
-        program.command("uninstall")
-            .description("Uninstalls the provided mods")
-            .argument("<mods...>", "The mods to uninstall (as names or ids)")
+        program.command("essential")
+            .description("Marks mods as essential")
+            .argument("<mods...>", "The mods to mark as essential (as names or ids)")
             .action((mods) => {
                 ModManager.execute(() => {
                     for (let mod of mods) {
-                        Mods.uninstall(mod);
+                        Mods.markEssential(mod)
                     }
                 })
             })
     }
-    
+
 }

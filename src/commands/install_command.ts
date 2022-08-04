@@ -8,10 +8,11 @@ export default class InstallCommand implements Subcommand {
         program.command("install")
             .description("Installs the provided mods")
             .argument("<mods...>", "The mods to install")
-            .action((mods) => {
+            .option("-e, --essential", "Marks these mods as essential", false)
+            .action(function() {
                 ModManager.execute(async () => {
-                    for (const mod of mods) {
-                        await Mods.install(mod);
+                    for (const mod of this.args) {
+                        await Mods.install(mod, this.opts().essential);
                     }
                 })
             });
