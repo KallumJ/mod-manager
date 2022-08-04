@@ -61,7 +61,7 @@ export default class ModManager {
         // If no errors are logged, cleanup the log file when the process exits
         process.on("exit", () => {
             // If file is only whitespace, i.e. blank
-            if (!readFileSync(this.LOG_FILE, "utf-8").trim().length) {
+            if (!readFileSync(this.LOG_FILE, "utf-8")?.trim().length) {
                 unlinkSync(this.LOG_FILE)
             }
         })
