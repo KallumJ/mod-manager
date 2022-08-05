@@ -1,16 +1,14 @@
 import path from "path";
-import Initialiser from "../util/initialiser.js";
 import PrintUtils from "../util/print_utils.js";
 import ModrinthSource from "./sources/modrinth_source.js";
 import ModSource from "./sources/mod_source.js";
 import ModNotFoundError from "../errors/mod_not_found_error.js";
 import {readFileSync, unlinkSync, writeFileSync} from "fs";
 import Util from "../util/util.js";
+import ModManager from "../mod-manager.js";
 
 
 export default class Mods {
-    public static readonly MOD_FILE = "mods.json";
-    public static readonly MODS_FOLDER_PATH: string = path.join("mods");
     private static readonly MOD_SOURCES: Array<ModSource> = [
         new ModrinthSource()
     ];
@@ -64,10 +62,6 @@ export default class Mods {
         }
     }
 
-    public static getModFilePath(): string {
-        return path.join(Initialiser.getModManagerFolderPath(), this.MOD_FILE);
-    }
-
     private static trackMod(mod: Mod): void {
         // Read current file
         const mods = this.getTrackedMods();
@@ -80,12 +74,12 @@ export default class Mods {
     }
 
     public static getTrackedMods(): Array<Mod> {
-        const file = readFileSync(this.getModFilePath(), "utf-8");
+        const file = readFileSync(ModManager.FilePaths.MOD_FILE_PATH, "utf-8");
         return JSON.parse(file);
     }
 
     public static writeFile(mods: Array<Mod>): void {
-        writeFileSync(this.getModFilePath(), JSON.stringify(mods, null, 4));
+        writeFileSync(ModManager.FilePaths.MOD_FILE_PATH, JSON.stringify(mods, null, 4));
     }
 
     private static isModInstalled(id: string): boolean {
@@ -103,7 +97,7 @@ export default class Mods {
             let mods: Array<Mod> = this.getTrackedMods();
 
             // Remove mod from list and uninstall it
-            unlinkSync(path.join(this.MODS_FOLDER_PATH, modToUninstall.fileName));
+            unlinkSync(path.join(ModManager.FilePaths.MOD_FILE_PATH, modToUninstall.fileName));
             mods = mods.filter(item => !Mods.areModsEqual(item, modToUninstall));
             this.writeFile(mods);
             spinner.succeed(`${modToUninstall.name} successfully uninstalled!`)

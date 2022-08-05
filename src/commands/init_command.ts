@@ -6,8 +6,8 @@ export default class InitCommand implements Subcommand {
     registerCommand(program: Command) {
         program.command("init")
             .description("Initialises mod manager")
-            .action(() => {
-                Initialiser.initialise();
+            .action(async () => {
+                await Initialiser.initialise();
             });
     }
 }

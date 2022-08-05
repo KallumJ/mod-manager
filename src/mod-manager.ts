@@ -15,7 +15,6 @@ import {readFileSync, unlinkSync} from "fs";
 
 export default class ModManager {
     public static logger: Logger | null = null;
-    private static readonly LOG_FILE: string = path.join(Initialiser.getModManagerFolderPath(), "logs", `${new Date().valueOf()}.log.json`);
 
     private static program: Command = new Command();
 
@@ -26,6 +25,15 @@ export default class ModManager {
         new UninstallCommand(),
         new EssentialCommand()
     ];
+
+    static FilePaths = class {
+        public static readonly MOD_MANAGER_FOLDER_PATH = path.join(".mod-manager");
+        public static readonly LOGS_FOLDER = path.join(this.MOD_MANAGER_FOLDER_PATH, "logs");
+        public static readonly LOG_FILE: string = path.join(this.LOGS_FOLDER, `${new Date().valueOf()}.log.json`);
+        public static readonly MOD_FILE_PATH = path.join(this.MOD_MANAGER_FOLDER_PATH, "mods.json");
+        public static readonly VERSION_FILE_PATH = path.join(this.MOD_MANAGER_FOLDER_PATH, "version")
+        public static readonly MODS_FOLDER_PATH = path.join("mods")
+    }
 
     static init() {
         if (Initialiser.isInitialised()) {
@@ -58,7 +66,7 @@ export default class ModManager {
                 hostname: undefined}
         },
             pino.destination({
-                dest: this.LOG_FILE,
+                dest: ModManager.FilePaths.LOG_FILE,
                 sync: true
             })
         );
@@ -71,8 +79,8 @@ export default class ModManager {
         // If no errors are logged, cleanup the log file when the process exits
         process.on("exit", () => {
             // If file is only whitespace, i.e. blank
-            if (!readFileSync(this.LOG_FILE, "utf-8")?.trim().length) {
-                unlinkSync(this.LOG_FILE)
+            if (!readFileSync(ModManager.FilePaths.LOG_FILE, "utf-8")?.trim().length) {
+                unlinkSync(ModManager.FilePaths.LOG_FILE)
             }
         })
 
