@@ -64,7 +64,7 @@ export default class ModManager {
         );
 
         process.on("uncaughtException", error => {
-            PrintUtils.error(error.message, error);
+            PrintUtils.error(`[FATAL]: ${error.message}`, error);
             setTimeout(() => process.exit(1), 1)
         })
 
