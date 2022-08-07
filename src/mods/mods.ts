@@ -194,7 +194,7 @@ export default class Mods {
                     throw new ModNotFoundError("There is no newer version available.");
                 }
             } catch (e) {
-                spinner.error(`${mod.name} already has the latest version installed!`)
+                spinner.info(`${mod.name} already has the latest version installed!`)
             }
         }
     }

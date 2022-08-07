@@ -11,7 +11,7 @@ import {ListCommand} from "./commands/list_command.js";
 import UninstallCommand from "./commands/uninstall_command.js";
 import EssentialCommand from "./commands/essential_command.js";
 import {readFileSync, unlinkSync} from "fs";
-import UpgradeCommand from "./commands/upgrade_command.js";
+import UpdateCommand from "./commands/upgrade_command.js";
 import MigratePossibleCommand from "./commands/migrate_possible.js";
 
 
@@ -26,7 +26,7 @@ export default class ModManager {
         new ListCommand(),
         new UninstallCommand(),
         new EssentialCommand(),
-        new UpgradeCommand(),
+        new UpdateCommand(),
         new MigratePossibleCommand()
     ];
 

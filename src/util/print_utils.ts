@@ -39,6 +39,14 @@ export default class PrintUtils {
             this.spinner.succeed(print);
         }
 
+        public warn(print: string) {
+            this.spinner.warn(print);
+        }
+
+        public info(print: string) {
+            this.spinner.info(`ℹ️ ${print}`);
+        }
+
         public updateText(text: string) {
             this.spinner.start(text);
         }
