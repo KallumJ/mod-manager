@@ -207,4 +207,35 @@ export default class Mods {
 
         return source
     }
+
+    static async isMigratePossible(version: string): Promise<boolean> {
+        const mods = this.getTrackedMods();
+
+        let availableList = [];
+
+        // For every tracked mod
+        for (let mod of mods) {
+            // Get the latest version for each mod on the provided minecraft version
+            const spinner = new PrintUtils.Spinner(`Checking ${mod.name}...`);
+            spinner.start();
+
+            const source = this.getSourceFromName(mod.source);
+            try {
+                await source.getLatestVersion(mod.id, version)
+                // Report and record that this mod is available
+                spinner.succeed(`${mod.name} is available on Minecraft ${version}`)
+                availableList.push(true)
+            } catch (e) {
+                // Report and record that this mod is not available
+                spinner.error(`${mod.name} is not available on Minecraft ${version}`)
+                availableList.push(false);
+            }
+        }
+
+        // Filter out all the true's from the list
+        availableList = availableList.filter(available => !available)
+
+        // If the array is empty, all the mods reported as available, and a migration is possible
+        return Util.isArrayEmpty(availableList);
+    }
 }

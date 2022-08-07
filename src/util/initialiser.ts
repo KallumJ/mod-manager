@@ -2,9 +2,7 @@ import {existsSync, mkdirSync, writeFileSync} from "fs";
 import path from "path";
 import PrintUtils from "./print_utils.js";
 import ModManager from "../mod-manager.js";
-import inquirer from "inquirer";
 import MinecraftUtils from "./minecraft_utils.js";
-import MinecraftVersionError from "../errors/minecraft_version_error.js";
 
 export default class Initialiser {
     public static async initialise(): Promise<void> {
@@ -13,7 +11,7 @@ export default class Initialiser {
                 const success: boolean = this.setupFolderStructure();
 
                 if (success) {
-                    const version = await this.getMinecraftVersionFromInput();
+                    const version = await MinecraftUtils.getMinecraftVersionFromInput("What Minecraft version is your server running?");
                     await MinecraftUtils.updateCurrentMinecraftVersion(version)
 
                     PrintUtils.success("Sucessfully initialised Mod Manager!");
@@ -55,31 +53,5 @@ export default class Initialiser {
         } else {
             return false;
         }
-    }
-
-    private static async getMinecraftVersionFromInput() {
-        let isVersionValid = false;
-
-        let version: string | undefined = undefined;
-        while (!isVersionValid) {
-            const answer = await inquirer.prompt([{
-                type: "input",
-                name: "minecraft_version",
-                message: "What version of Minecraft is the server running?"
-            }])
-            version = answer.minecraft_version;
-
-            if (await MinecraftUtils.isValidVersion(version)) {
-                isVersionValid = true;
-            } else {
-                PrintUtils.error(`${version} is not a valid Minecraft version for a Fabric server. Please try again`);
-            }
-        }
-
-        if (version == undefined) {
-            throw new MinecraftVersionError("Escaped version input without a valid version")
-        }
-
-        return version;
     }
 }
