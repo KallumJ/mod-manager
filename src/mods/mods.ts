@@ -208,8 +208,12 @@ export default class Mods {
         return source
     }
 
-    static async isMigratePossible(version: string): Promise<boolean> {
-        const mods = this.getTrackedMods();
+    static async isMigratePossible(version: string, force: boolean): Promise<boolean> {
+        const mods = !force ? this.getTrackedMods() : this.getEssentialMods();
+
+        if (Util.isArrayEmpty(mods)) {
+            throw new Error("Mods list is empty")
+        }
 
         let availableList = [];
 
@@ -237,5 +241,9 @@ export default class Mods {
 
         // If the array is empty, all the mods reported as available, and a migration is possible
         return Util.isArrayEmpty(availableList);
+    }
+
+    private static getEssentialMods() {
+        return this.getTrackedMods().filter(mod => mod.essential);
     }
 }

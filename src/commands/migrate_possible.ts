@@ -10,8 +10,11 @@ export default class MigratePossibleCommand implements Subcommand {
         program.command("migrate-possible")
             .description("Reports whether it is possible to upgrade to the provided Minecraft version")
             .argument("[version]", "The Minecraft version to try and migrate to")
-            .action((version) => {
+            .option("-f, --force", "Checks whether a force migration is possible, where only essential mods are included", false)
+            .action((version, options) => {
                 ModManager.execute(async () => {
+                        const force = options.force;
+
                         // If no version is provided, prompt user for one
                         if (version === "" || version == undefined) {
                             version = await MinecraftUtils.getMinecraftVersionFromInput("What Minecraft version would you like to migrate to?");
@@ -19,12 +22,20 @@ export default class MigratePossibleCommand implements Subcommand {
 
                         // If version is valid, check if migration is possible
                         if (await MinecraftUtils.isValidVersion(version)) {
-                            const possible = await Mods.isMigratePossible(version);
+                            try {
+                                const possible = await Mods.isMigratePossible(version, force);
 
-                            if (possible) {
-                                PrintUtils.success(`It is possible to migrate to version ${version}`)
-                            } else {
-                                PrintUtils.error(`It is not possible to migrate to version ${version}`)
+                                if (possible) {
+                                    PrintUtils.success(`It is possible to migrate to version ${version}`)
+                                } else {
+                                    PrintUtils.error(`It is not possible to migrate to version ${version}`)
+                                }
+                            } catch (e) {
+                                if (!force) {
+                                    PrintUtils.error("There are no mods installed, try `mod-manager install -h` to learn more!")
+                                } else {
+                                    PrintUtils.error("There are no mods installed that are marked essential. Try `mod-manager essential -h` to learn more!")
+                                }
                             }
                         } else {
                             PrintUtils.error(`${version} is not a valid Minecraft version`);
