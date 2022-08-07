@@ -11,7 +11,7 @@ import DownloadError from "../../errors/download_error.js";
 export default class ModrinthSource implements ModSource {
     private static readonly BASE_URL: string = "https://api.modrinth.com/v2";
     private static readonly SEARCH_URL: string = ModrinthSource.BASE_URL + "/search";
-    private static readonly INSTALL_URL: string = ModrinthSource.BASE_URL + "/project/%s/version";
+    private static readonly LIST_VERSIONS_URL: string = ModrinthSource.BASE_URL + "/project/%s/version";
     private static readonly PROJECT_URL: string = ModrinthSource.BASE_URL + "/project/%s";
 
     /**
@@ -87,87 +87,26 @@ export default class ModrinthSource implements ModSource {
     }
 
     /**
-     * Installs the mod with the provided mod id
-     * Example shape of data returned by query:
-     * [
-     *    {
-     * 		"id": "ZRR9yqHD",
-     * 		"project_id": "gvQqBUqZ",
-     * 		"author_id": "uhPSqlnd",
-     * 		"featured": false,
-     * 		"name": "Lithium 0.8.3",
-     * 		"version_number": "mc1.19.1-0.8.3",
-     * 		"changelog": "Lithium 0.8.3 is the second release for 1.19.1! It includes a bugfix too!\n\n## Fixes\n- fix: update chunk serialization patch to new mappings\n\nYou can donate on patreon: https://www.patreon.com/2No2Name\n",
-     * 		"changelog_url": null,
-     * 		"date_published": "2022-07-29T22:18:09.072973Z",
-     * 		"downloads": 3592,
-     * 		"version_type": "release",
-     * 		"files": [
-     * 			{
-     * 				"hashes": {
-     * 					"sha1": "9ef9f10f62d4c19b736fe493f2a11d737fbe3d7c",
-     * 					"sha512": "a3b623b4c14f6ba46d1486ffb3d1ba3174e3317b419b2ddfdf7bb572244e706d2e0a37bdce169c94455bec00fd107530ba78d7e611162a632cc6950e6a625433"
-     * 				},
-     * 				"url": "https://cdn.modrinth.com/data/gvQqBUqZ/versions/mc1.19.1-0.8.3/lithium-fabric-mc1.19.1-0.8.3.jar",
-     * 				"filename": "lithium-fabric-mc1.19.1-0.8.3.jar",
-     * 				"primary": true,
-     * 				"size": 476619
-     * 			}
-     * 		],
-     * 		"dependencies": [],
-     * 		"game_versions": [
-     * 			"1.19.1"
-     * 		],
-     * 		"loaders": [
-     * 			"fabric"
-     * 		]
-     * 	}
-     * ]
-     * @param id the id of the mod
+     * Installs the provided Version
+     * @param version the Version to install
      * @param essential whether this mod is essential or not
      * @throws DownloadError if an error occurs when downloading
-     * @throws ModNotFoundError if there are no versions available for the current Minecraft Version
      */
-    async install(id: string, essential: boolean): Promise<Mod> {
-        const mcVersion = await MinecraftUtils.getCurrentMinecraftVersion();
-
-        const params = {
-            loaders: '["fabric"]',
-            game_versions: format('["%s"]', mcVersion)
-        }
-
-        const response = await axios.get(format(ModrinthSource.INSTALL_URL, id), {params});
-        const results = await response.data;
-
-        if (Util.isArrayEmpty(results)) {
-            throw new ModNotFoundError(`Mod with id ${id} has no available versions on ${this.getSourceName()} for Minecraft version ${mcVersion}`);
-        }
-
-        const latestFile = results[0].files[0];
-
-        const fileName = latestFile.filename;
-        const url = latestFile.url;
-        const modVersion = results[0].version_number;
-
-        const task: DownloadTask = {
-            fileName: fileName,
-            url: url
-        }
-
+    async install(version: Version, essential: boolean): Promise<Mod> {
         try {
-            FileDownloader.downloadMod(task)
+            FileDownloader.downloadMod(version)
 
             return {
-                name: await this.getProjectName(id),
-                id: id,
-                fileName: fileName,
-                version: modVersion,
+                name: await this.getProjectName(version.id),
+                id: version.id,
+                fileName: version.fileName,
+                version: version.version_number,
                 source: this.getSourceName(),
                 essential: essential
             };
 
         } catch (e) {
-            throw new DownloadError(`An error occurred downloading mod with id ${id} from ${this.getSourceName()}`)
+            throw new DownloadError(`An error occurred downloading mod with id ${version.id} from ${this.getSourceName()}`)
         }
     }
 
@@ -244,4 +183,67 @@ export default class ModrinthSource implements ModSource {
         return await response.data.title;
     }
 
+    /**
+     * Gets the latest version of the mod
+     * Example shape of data returned by query:
+     * [
+     *    {
+     * 		"id": "ZRR9yqHD",
+     * 		"project_id": "gvQqBUqZ",
+     * 		"author_id": "uhPSqlnd",
+     * 		"featured": false,
+     * 		"name": "Lithium 0.8.3",
+     * 		"version_number": "mc1.19.1-0.8.3",
+     * 		"changelog": "Lithium 0.8.3 is the second release for 1.19.1! It includes a bugfix too!\n\n## Fixes\n- fix: update chunk serialization patch to new mappings\n\nYou can donate on patreon: https://www.patreon.com/2No2Name\n",
+     * 		"changelog_url": null,
+     * 		"date_published": "2022-07-29T22:18:09.072973Z",
+     * 		"downloads": 3592,
+     * 		"version_type": "release",
+     * 		"files": [
+     * 			{
+     * 				"hashes": {
+     * 					"sha1": "9ef9f10f62d4c19b736fe493f2a11d737fbe3d7c",
+     * 					"sha512": "a3b623b4c14f6ba46d1486ffb3d1ba3174e3317b419b2ddfdf7bb572244e706d2e0a37bdce169c94455bec00fd107530ba78d7e611162a632cc6950e6a625433"
+     * 				},
+     * 				"url": "https://cdn.modrinth.com/data/gvQqBUqZ/versions/mc1.19.1-0.8.3/lithium-fabric-mc1.19.1-0.8.3.jar",
+     * 				"filename": "lithium-fabric-mc1.19.1-0.8.3.jar",
+     * 				"primary": true,
+     * 				"size": 476619
+     * 			}
+     * 		],
+     * 		"dependencies": [],
+     * 		"game_versions": [
+     * 			"1.19.1"
+     * 		],
+     * 		"loaders": [
+     * 			"fabric"
+     * 		]
+     * 	}
+     * ]
+     * @param id
+     * @param mcVersion
+     * @throws ModNotFoundError if there are no versions available for the current Minecraft Version
+     */
+    async getLatestVersion(id: string, mcVersion: string): Promise<Version> {
+        const params = {
+            loaders: '["fabric"]',
+            game_versions: format('["%s"]', mcVersion)
+        }
+
+        const response = await axios.get(format(ModrinthSource.LIST_VERSIONS_URL, id), {params});
+        const results = await response.data;
+
+        if (Util.isArrayEmpty(results)) {
+            throw new ModNotFoundError(`Mod with id ${id} has no available versions on ${this.getSourceName()} for Minecraft version ${mcVersion}`);
+        }
+        const latestVersion = results[0];
+        const latestFile = results[0].files[0];
+
+        return {
+            id: latestVersion.project_id,
+            version_number: latestVersion.version_number,
+            fileName: latestFile.filename,
+            url: latestFile.url
+        };
+    }
 }

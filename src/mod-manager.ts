@@ -11,6 +11,7 @@ import {ListCommand} from "./commands/list_command.js";
 import UninstallCommand from "./commands/uninstall_command.js";
 import EssentialCommand from "./commands/essential_command.js";
 import {readFileSync, unlinkSync} from "fs";
+import UpgradeCommand from "./commands/upgrade_command.js";
 
 
 export default class ModManager {
@@ -23,7 +24,8 @@ export default class ModManager {
         new InstallCommand(),
         new ListCommand(),
         new UninstallCommand(),
-        new EssentialCommand()
+        new EssentialCommand(),
+        new UpgradeCommand()
     ];
 
     static FilePaths = class {
@@ -48,6 +50,8 @@ export default class ModManager {
             command.registerCommand(this.program);
         }
 
+        this.program.showSuggestionAfterError();
+        this.program.showHelpAfterError();
         this.program.parse();
     }
 

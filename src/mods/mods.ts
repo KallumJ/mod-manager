@@ -6,7 +6,7 @@ import ModNotFoundError from "../errors/mod_not_found_error.js";
 import {readFileSync, unlinkSync, writeFileSync} from "fs";
 import Util from "../util/util.js";
 import ModManager from "../mod-manager.js";
-
+import MinecraftUtils from "../util/minecraft_utils.js";
 
 export default class Mods {
     private static readonly MOD_SOURCES: Array<ModSource> = [
@@ -45,7 +45,9 @@ export default class Mods {
                     if (!this.isModInstalled(id)) {
                         spinner.updateText(`Installing ${projectName}...`)
                         try {
-                            const modObj: Mod = await source.install(id, essential);
+                            const mcVersion = await MinecraftUtils.getCurrentMinecraftVersion();
+                            const latestVersion = await source.getLatestVersion(id, mcVersion)
+                            const modObj: Mod = await source.install(latestVersion, essential);
                             this.trackMod(modObj);
 
                             spinner.succeed(`Successfully installed ${projectName}`);
@@ -90,25 +92,27 @@ export default class Mods {
     static uninstall(mod: string) {
         // Find mod to uninstall
         const spinner = new PrintUtils.Spinner(`Uninstalling ${mod}...`)
+        spinner.start();
 
         const modToUninstall = this.findMod(mod);
         // IF a matching mod is found, remove it
         if (modToUninstall != undefined) {
-            let mods: Array<Mod> = this.getTrackedMods();
-
-            // Remove mod from list and uninstall it
-            unlinkSync(path.join(ModManager.FilePaths.MOD_FILE_PATH, modToUninstall.fileName));
-            mods = mods.filter(item => !Mods.areModsEqual(item, modToUninstall));
-            this.writeFile(mods);
+            this.silentUninstall(modToUninstall);
             spinner.succeed(`${modToUninstall.name} successfully uninstalled!`)
         } else {
             spinner.error(`${mod} was not found.`)
         }
-
-
-
-
     }
+
+    static silentUninstall(mod: Mod) {
+        let mods: Array<Mod> = this.getTrackedMods();
+
+        // Remove mod from list and uninstall it
+        unlinkSync(path.join(ModManager.FilePaths.MODS_FOLDER_PATH, mod.fileName));
+        mods = mods.filter(item => !Mods.areModsEqual(item, mod));
+        this.writeFile(mods);
+    }
+
     static areModsEqual(mod1: Mod, mod2: Mod): boolean {
         return mod1.id === mod2.id;
     }
@@ -152,5 +156,55 @@ export default class Mods {
         }
 
         return undefined;
+    }
+
+    static async update() {
+        const trackedMods = this.getTrackedMods();
+
+        if (Util.isArrayEmpty(trackedMods)) {
+            PrintUtils.error("There are no mods currently installed. Try `mod-manager install -h` to learn more!")
+            return;
+        }
+
+        const mcVersion = await MinecraftUtils.getCurrentMinecraftVersion();
+
+        // For every tracked mod
+        for (let mod of trackedMods) {
+            const spinner = new PrintUtils.Spinner(`Checking for newer version of ${mod.name}`)
+            spinner.start();
+
+            // Get the latest version
+            const source = this.getSourceFromName(mod.source);
+            let latestVersion: Version | undefined  = undefined;
+            try {
+                latestVersion = await source.getLatestVersion(mod.id, mcVersion);
+
+                // If the latest version has a different version number, it must be newer, install it.
+                if (latestVersion.version_number != mod.version) {
+                    spinner.updateText(`Newer version for ${mod.name} found. Installing...`)
+                    this.silentUninstall(mod);
+
+                    const newMod = await source.install(latestVersion, mod.essential);
+                    this.trackMod(newMod);
+
+                    spinner.succeed(`Successfully updated ${newMod.name}`)
+
+                    // Else, the latest version is already installed, do nothing.
+                } else {
+                    throw new ModNotFoundError("There is no newer version available.");
+                }
+            } catch (e) {
+                spinner.error(`${mod.name} already has the latest version installed!`)
+            }
+        }
+    }
+
+    static getSourceFromName(name: string): ModSource {
+        const source = this.MOD_SOURCES.filter(src => src.getSourceName() === name)[0];
+        if (source == undefined) {
+            throw new Error(`There is no source registered with the name ${name}`)
+        }
+
+        return source
     }
 }

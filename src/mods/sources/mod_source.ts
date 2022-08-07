@@ -1,9 +1,11 @@
 export default interface ModSource {
     search(query: string): Promise<string>;
 
-    install(id: string, essential: boolean): Promise<Mod>;
+    install(version: Version, essential: boolean): Promise<Mod>;
 
     getSourceName(): string;
 
     getProjectName(id: string): Promise<string>;
+
+    getLatestVersion(id: string, mcVersion: string): Promise<Version>;
 }
