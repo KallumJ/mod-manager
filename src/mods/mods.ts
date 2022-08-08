@@ -73,7 +73,7 @@ export default class Mods {
         mods.push(mod);
 
         // Write list back to file
-        this.writeFile(mods);
+        this.writeToModFile(mods);
     }
 
     public static getTrackedMods(): Array<Mod> {
@@ -81,7 +81,7 @@ export default class Mods {
         return JSON.parse(file);
     }
 
-    public static writeFile(mods: Array<Mod>): void {
+    public static writeToModFile(mods: Array<Mod>): void {
         writeFileSync(ModManager.FilePaths.MOD_FILE_PATH, JSON.stringify(mods, null, 4));
     }
 
@@ -111,7 +111,7 @@ export default class Mods {
         // Remove mod from list and uninstall it
         unlinkSync(path.join(ModManager.FilePaths.MODS_FOLDER_PATH, mod.fileName));
         mods = mods.filter(item => !Mods.areModsEqual(item, mod));
-        this.writeFile(mods);
+        this.writeToModFile(mods);
     }
 
     static areModsEqual(mod1: Mod, mod2: Mod): boolean {
@@ -129,7 +129,7 @@ export default class Mods {
             // Toggle essential status, and write back to file
             modToMark.essential = !modToMark.essential;
             mods.push(modToMark)
-            this.writeFile(mods);
+            this.writeToModFile(mods);
 
             if (modToMark.essential) {
                 PrintUtils.success(`Marked ${modToMark.name} as essential`)
