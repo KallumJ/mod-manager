@@ -7,12 +7,14 @@ import ModNotFoundError from "../../errors/mod_not_found_error.js";
 import Util from "../../util/util.js";
 import FileDownloader from "../../io/file_downloder.js";
 import DownloadError from "../../errors/download_error.js";
+import Mods from "../mods.js";
 
 export default class ModrinthSource implements ModSource {
     private static readonly BASE_URL: string = "https://api.modrinth.com/v2";
     private static readonly SEARCH_URL: string = ModrinthSource.BASE_URL + "/search";
     private static readonly LIST_VERSIONS_URL: string = ModrinthSource.BASE_URL + "/project/%s/version";
     private static readonly PROJECT_URL: string = ModrinthSource.BASE_URL + "/project/%s";
+    private static readonly SINGLE_VERSION_URL: string = `${ModrinthSource.BASE_URL}/version/%s`;
 
     /**
      * Searches Modrinth for the specified query
@@ -92,21 +94,27 @@ export default class ModrinthSource implements ModSource {
      * @param essential whether this mod is essential or not
      * @throws DownloadError if an error occurs when downloading
      */
-    async install(version: Version, essential: boolean): Promise<Mod> {
+    async install(version: Version, essential: boolean): Promise<void> {
         try {
+            if (!Util.isArrayEmpty(version.dependencies)) {
+                for (let dependency of version.dependencies) {
+                    await this.install(dependency, essential);
+                }
+            }
             FileDownloader.downloadMod(version)
 
-            return {
-                name: await this.getProjectName(version.id),
-                id: version.id,
+            const mod = {
+                name: await this.getProjectName(version.modId),
+                id: version.modId,
                 fileName: version.fileName,
-                version: version.version_number,
+                version: version.versionNumber,
                 source: this.getSourceName(),
-                essential: essential
-            };
+                essential: essential,
+            }
 
+            Mods.trackMod(mod);
         } catch (e) {
-            throw new DownloadError(`An error occurred downloading mod with id ${version.id} from ${this.getSourceName()}`)
+            throw new DownloadError(`An error occurred downloading mod with id ${version.modId} from ${this.getSourceName()}`)
         }
     }
 
@@ -237,13 +245,67 @@ export default class ModrinthSource implements ModSource {
             throw new ModNotFoundError(`Mod with id ${id} has no available versions on ${this.getSourceName()} for Minecraft version ${mcVersion}`);
         }
         const latestVersion = results[0];
-        const latestFile = results[0].files[0];
+
+        return this.getVersionFromId(latestVersion.id);
+    }
+
+    /**
+     * Gets a version object from the provided version id
+     * Example response from query:
+     * {
+     * 	"id": "3KmOcp6b",
+     * 	"project_id": "P7dR8mSH",
+     * 	"author_id": "JZA4dW8o",
+     * 	"featured": false,
+     * 	"name": "[1.19] Fabric API 0.58.0+1.19",
+     * 	"version_number": "0.58.0+1.19",
+     * 	"changelog": "- Bump version (modmuss50)\n- Enable parallel builds by default. Update remotesign to a parallel capable version. Set org.gradle.parallel.threads in actions as we are IO bound. (modmuss50)\n- fix custom dimension not loaded on world preset other than default (#2387) (deirn)\n- Fix inconsistent ordering of item attribute modifiers by using a linked hashmap (#2380) (Technici4n)\n- Fix incorrect check in GlobalReceiverRegistry (#2363) (apple502j)\n- Make disconnected screen reason text scrollable (#2349) (deirn, modmuss50)\n- Fix Indigo AO calculation (#2344) (PepperCode1)\n",
+     * 	"changelog_url": null,
+     * 	"date_published": "2022-07-21T20:10:41.654884Z",
+     * 	"downloads": 16745,
+     * 	"version_type": "release",
+     * 	"files": [
+     * 		{
+     * 			"hashes": {
+     * 				"sha512": "9c948488852e3bcf7a84fef26465bf0bcfbba17fb03e6b56ae11cf82d1ae6abbfb4c569bf3f1d088c6c3c5219d37c2699afc9013926f588263210a19f8d6e235",
+     * 				"sha1": "6d29acc99b293b2be7060df6d7c887812bd54e46"
+     * 			},
+     * 			"url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/0.58.0+1.19/fabric-api-0.58.0%2B1.19.jar",
+     * 			"filename": "fabric-api-0.58.0+1.19.jar",
+     * 			"primary": false,
+     * 			"size": 1496048
+     * 		}
+     * 	],
+     * 	"dependencies": [],
+     * 	"game_versions": [
+     * 		"1.19"
+     * 	],
+     * 	"loaders": [
+     * 		"fabric"
+     * 	]
+     * }
+     * @param versionId the version id to transform into an object
+     * @return the Version object
+     */
+    async getVersionFromId(versionId: string): Promise<Version> {
+        const response = await axios.get(format(ModrinthSource.SINGLE_VERSION_URL, versionId));
+        const latestVersion = await response.data;
+
+        const latestFile = latestVersion.files[0];
+
+        const dependencies = [];
+        if (!Util.isArrayEmpty(latestVersion.dependencies)) {
+            for (let dependency of latestVersion.dependencies) {
+                dependencies.push(await this.getVersionFromId(dependency.version_id))
+            }
+        }
 
         return {
-            id: latestVersion.project_id,
-            version_number: latestVersion.version_number,
+            modId: latestVersion.project_id,
+            versionNumber: latestVersion.version_number,
             fileName: latestFile.filename,
-            url: latestFile.url
+            url: latestFile.url,
+            dependencies: dependencies
         };
     }
 }

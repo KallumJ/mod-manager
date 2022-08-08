@@ -1,6 +1,5 @@
 import path from "path";
 import PrintUtils from "../util/print_utils.js";
-import ModrinthSource from "./sources/modrinth_source.js";
 import ModSource from "./sources/mod_source.js";
 import ModNotFoundError from "../errors/mod_not_found_error.js";
 import {readFileSync, unlinkSync, writeFileSync} from "fs";
@@ -10,9 +9,17 @@ import MinecraftUtils from "../util/minecraft_utils.js";
 import MigrateError from "../errors/migrate_error.js";
 
 export default class Mods {
-    private static readonly MOD_SOURCES: Array<ModSource> = [
-        new ModrinthSource()
-    ];
+    private static readonly MOD_SOURCES: Array<ModSource> = [];
+
+    public static registerSource(source: ModSource, envVar?: string) {
+        if (envVar != undefined) {
+            if (!process.env.hasOwnProperty(envVar)) {
+                PrintUtils.warn(`${source.getSourceName()} could not be registered as a mod source, as the required environment variable ${envVar} was not detected. Functionality related to ${source.getSourceName()} will be skipped.`)
+                return;
+            }
+        }
+        this.MOD_SOURCES.push(source);
+    }
 
     public static async install(mod: string, essential: boolean): Promise<void> {
         let success: boolean = false;
@@ -48,8 +55,7 @@ export default class Mods {
                         try {
                             const mcVersion = await MinecraftUtils.getCurrentMinecraftVersion();
                             const latestVersion = await source.getLatestVersion(id, mcVersion)
-                            const modObj: Mod = await source.install(latestVersion, essential);
-                            this.trackMod(modObj);
+                            await source.install(latestVersion, essential);
 
                             spinner.succeed(`Successfully installed ${projectName}`);
                             success = true;
@@ -65,7 +71,7 @@ export default class Mods {
         }
     }
 
-    private static trackMod(mod: Mod): void {
+    public static trackMod(mod: Mod): void {
         // Read current file
         const mods = this.getTrackedMods();
 
@@ -181,14 +187,13 @@ export default class Mods {
                 latestVersion = await source.getLatestVersion(mod.id, mcVersion);
 
                 // If the latest version has a different version number, it must be newer, install it.
-                if (latestVersion.version_number != mod.version) {
+                if (latestVersion.versionNumber != mod.version) {
                     spinner.updateText(`Newer version for ${mod.name} found. Installing...`)
                     this.silentUninstall(mod);
 
-                    const newMod = await source.install(latestVersion, mod.essential);
-                    this.trackMod(newMod);
+                    await source.install(latestVersion, mod.essential);
 
-                    spinner.succeed(`Successfully updated ${newMod.name}`)
+                    spinner.succeed(`Successfully updated ${mod.name}`)
 
                     // Else, the latest version is already installed, do nothing.
                 } else {
@@ -300,11 +305,10 @@ export default class Mods {
                 const latestVersion = await source.getLatestVersion(mod.id, version)
 
                 // Install the new mod
-                spinner.updateText(`Installing ${mod.name} ${latestVersion.version_number}..`)
-                const newMod = await source.install(latestVersion, mod.essential)
-                this.trackMod(newMod)
+                spinner.updateText(`Installing ${mod.name} ${latestVersion.versionNumber}..`)
+                await source.install(latestVersion, mod.essential)
 
-                spinner.succeed(`Successfully installed ${newMod.name} ${newMod.version}`)
+                spinner.succeed(`Successfully installed ${mod.name} ${mod.version}`)
             } catch (e) {
                 // If a mod is not available, but is essential, throw error, else, warn user, and continue.
                 if (mod.essential) {

@@ -6,14 +6,15 @@ declare global {
         fileName: string,
         version: string
         source: string,
-        essential: boolean
+        essential: boolean,
     }
 
     type Version = {
-        id: string
+        modId: string
         fileName: string,
         url: string
-        version_number: string
+        versionNumber: string,
+        dependencies: Array<Version>
     }
 }
 
