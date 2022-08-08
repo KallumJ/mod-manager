@@ -315,6 +315,7 @@ export default class Mods {
             }
         }
 
+        await MinecraftUtils.updateCurrentMinecraftVersion(version)
         PrintUtils.success(`Successfully migrated to ${version}`)
     }
 }
