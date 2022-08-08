@@ -20,25 +20,10 @@ export default class MigratePossibleCommand implements Subcommand {
                             version = await MinecraftUtils.getMinecraftVersionFromInput("What Minecraft version would you like to migrate to?");
                         }
 
-                        // If version is valid, check if migration is possible
-                        if (await MinecraftUtils.isValidVersion(version)) {
-                            try {
-                                const possible = await Mods.isMigratePossible(version, force);
-
-                                if (possible) {
-                                    PrintUtils.success(`It is possible to migrate to version ${version}`)
-                                } else {
-                                    PrintUtils.error(`It is not possible to migrate to version ${version}`)
-                                }
-                            } catch (e) {
-                                if (!force) {
-                                    PrintUtils.error("There are no mods installed, try `mod-manager install -h` to learn more!")
-                                } else {
-                                    PrintUtils.error("There are no mods installed that are marked essential. Try `mod-manager essential -h` to learn more!")
-                                }
-                            }
-                        } else {
-                            PrintUtils.error(`${version} is not a valid Minecraft version`);
+                        try {
+                            await Mods.isMigratePossible(version, force);
+                        } catch (e) {
+                            PrintUtils.error(e.message)
                         }
                     }
                 )

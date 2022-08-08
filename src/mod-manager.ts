@@ -13,6 +13,7 @@ import EssentialCommand from "./commands/essential_command.js";
 import {readFileSync, unlinkSync} from "fs";
 import UpdateCommand from "./commands/upgrade_command.js";
 import MigratePossibleCommand from "./commands/migrate_possible.js";
+import MigrateCommand from "./commands/migrate_command.js";
 
 
 export default class ModManager {
@@ -27,7 +28,8 @@ export default class ModManager {
         new UninstallCommand(),
         new EssentialCommand(),
         new UpdateCommand(),
-        new MigratePossibleCommand()
+        new MigratePossibleCommand(),
+        new MigrateCommand()
     ];
 
     static FilePaths = class {
