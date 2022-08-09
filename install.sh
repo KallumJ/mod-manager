@@ -39,7 +39,7 @@ info "Verifying node verison..."
 NODE_VERSION_STR=$(node --version)
 if [[ "$?" -eq 127 ]]
 then
-  error "Node either is not installed, or is not on the root path.\n If you installed Node using NVM, see this link, ensuring links are made for node, npm and npx: https://stackoverflow.com/questions/21215059/cant-use-nvm-from-root-or-sudo"
+  error "Node does not appear to be installed. Please install Node version $MIN_NODE_VERSION or higher"
   exit
 fi
 
@@ -63,11 +63,6 @@ cd "$DOWNLOAD_DIR" || exit
 npm install --save
 npm install -g @vercel/ncc
 npx tsc
-
-if [[ ! -v $NVM_DIR ]]
-then
-  ln -s "$NVM_DIR/versions/node/$NODE_VERSION_STR/bin/ncc" "/usr/local/bin/ncc"
-fi
 ncc build build/ts/mod-manager.js -o build/flat
 
 # Install
