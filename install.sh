@@ -40,7 +40,7 @@ fi
 
 # Download source files
 info "Downloading mod-manager source..."
-git clone "https://hogwarts.bits.team/git/Bits/mod-manager.git" "$DOWNLOAD_DIR" || exit
+git clone "git@hogwarts.bits.team:Bits/mod-manager.git" "$DOWNLOAD_DIR" || exit
 
 # Compile
 info "Compiling..."
