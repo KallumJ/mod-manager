@@ -107,12 +107,12 @@ export default class Mods {
             this.silentUninstall(modToUninstall);
 
             for (let dependency of modToUninstall.dependencies) {
-                    if (!this.isDependedOn(dependency)) {
-                        const dependencyMod = this.findMod(dependency);
-                        if (dependencyMod != undefined) {
-                            this.silentUninstall(dependencyMod)
-                        }
+                if (!this.isDependedOn(dependency)) {
+                    const dependencyMod = this.findMod(dependency);
+                    if (dependencyMod != undefined) {
+                        this.silentUninstall(dependencyMod)
                     }
+                }
             }
 
             spinner.succeed(`${modToUninstall.name} successfully uninstalled!`)
@@ -161,30 +161,6 @@ export default class Mods {
         }
     }
 
-    /**
-     * Finds the mod based on the provided id or name
-     * @param mod the id or mod name
-     * @return the found Mod, or undefined if no mod was found
-     */
-    private static findMod(mod: string): TrackedMod | undefined {
-        // Replace underscores and dashes with spaces
-        mod = mod.replaceAll("_", " ");
-        mod = mod.replaceAll("-", " ")
-
-        let mods: Array<TrackedMod> = this.getTrackedMods();
-        for (let modEle of mods) {
-            const id = modEle.id.toLowerCase();
-            const name = modEle.name.toLowerCase();
-
-            const query = mod.toLowerCase();
-            if (id == query || Util.areStringsSimilar(mod, name)) {
-                return modEle;
-            }
-        }
-
-        return undefined;
-    }
-
     static async update() {
         const trackedMods = this.getTrackedMods();
 
@@ -202,7 +178,7 @@ export default class Mods {
 
             // Get the latest version
             const source = this.getSourceFromName(mod.source);
-            let latestVersion: Version | undefined  = undefined;
+            let latestVersion: Version | undefined = undefined;
             try {
                 latestVersion = await source.getLatestVersion(mod.id, mcVersion);
 
@@ -286,10 +262,6 @@ export default class Mods {
         return possible;
     }
 
-    private static getEssentialMods() {
-        return this.getTrackedMods().filter(mod => mod.essential);
-    }
-
     /**
      * Migrates to the provided version of minecraft
      * @param version the Minecraft version to migrate to
@@ -341,6 +313,34 @@ export default class Mods {
 
         await MinecraftUtils.updateCurrentMinecraftVersion(version)
         PrintUtils.success(`Successfully migrated to ${version}`)
+    }
+
+    /**
+     * Finds the mod based on the provided id or name
+     * @param mod the id or mod name
+     * @return the found Mod, or undefined if no mod was found
+     */
+    private static findMod(mod: string): TrackedMod | undefined {
+        // Replace underscores and dashes with spaces
+        mod = mod.replaceAll("_", " ");
+        mod = mod.replaceAll("-", " ")
+
+        let mods: Array<TrackedMod> = this.getTrackedMods();
+        for (let modEle of mods) {
+            const id = modEle.id.toLowerCase();
+            const name = modEle.name.toLowerCase();
+
+            const query = mod.toLowerCase();
+            if (id == query || Util.areStringsSimilar(mod, name)) {
+                return modEle;
+            }
+        }
+
+        return undefined;
+    }
+
+    private static getEssentialMods() {
+        return this.getTrackedMods().filter(mod => mod.essential);
     }
 
     private static isDependedOn(dependency: string) {

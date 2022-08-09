@@ -13,7 +13,7 @@ export class ListCommand implements Subcommand {
             .description("Lists installed mods")
             .action(() => {
                 ModManager.execute(() => {
-                    const tableFunc = asTable.configure ({
+                    const tableFunc = asTable.configure({
                         title: x => chalk.cyanBright(Util.stringPrettyify(x)),
                         delimiter: chalk.blueBright(' | '),
                         dash: chalk.blueBright('-')

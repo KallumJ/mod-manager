@@ -20,9 +20,15 @@ import {CurseforgeSource} from "./mods/sources/curseforge_source.js";
 
 export default class ModManager {
     public static logger: Logger | null = null;
-
+    static FilePaths = class {
+        public static readonly MOD_MANAGER_FOLDER_PATH = path.join(".mod-manager");
+        public static readonly LOGS_FOLDER = path.join(this.MOD_MANAGER_FOLDER_PATH, "logs");
+        public static readonly LOG_FILE: string = path.join(this.LOGS_FOLDER, `${new Date().valueOf()}.log.json`);
+        public static readonly MOD_FILE_PATH = path.join(this.MOD_MANAGER_FOLDER_PATH, "mods.json");
+        public static readonly VERSION_FILE_PATH = path.join(this.MOD_MANAGER_FOLDER_PATH, "version")
+        public static readonly MODS_FOLDER_PATH = path.join("mods")
+    }
     private static program: Command = new Command();
-
     private static subcommands: Array<Subcommand> = [
         new InitCommand(),
         new InstallCommand(),
@@ -33,15 +39,6 @@ export default class ModManager {
         new MigratePossibleCommand(),
         new MigrateCommand()
     ];
-
-    static FilePaths = class {
-        public static readonly MOD_MANAGER_FOLDER_PATH = path.join(".mod-manager");
-        public static readonly LOGS_FOLDER = path.join(this.MOD_MANAGER_FOLDER_PATH, "logs");
-        public static readonly LOG_FILE: string = path.join(this.LOGS_FOLDER, `${new Date().valueOf()}.log.json`);
-        public static readonly MOD_FILE_PATH = path.join(this.MOD_MANAGER_FOLDER_PATH, "mods.json");
-        public static readonly VERSION_FILE_PATH = path.join(this.MOD_MANAGER_FOLDER_PATH, "version")
-        public static readonly MODS_FOLDER_PATH = path.join("mods")
-    }
 
     static init() {
         if (Initialiser.isInitialised()) {
@@ -74,10 +71,11 @@ export default class ModManager {
 
     static createLogger(): Logger {
         let logger = pino({
-            base: {
-                pid: undefined,
-                hostname: undefined}
-        },
+                base: {
+                    pid: undefined,
+                    hostname: undefined
+                }
+            },
             pino.destination({
                 dest: ModManager.FilePaths.LOG_FILE,
                 sync: true

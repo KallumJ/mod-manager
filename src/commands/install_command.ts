@@ -9,7 +9,7 @@ export default class InstallCommand implements Subcommand {
             .description("Installs the provided mods")
             .argument("<mods...>", "The mods to install")
             .option("-e, --essential", "Marks these mods as essential", false)
-            .action(function() {
+            .action(function () {
                 ModManager.execute(async () => {
                     for (const mod of this.args) {
                         await Mods.install(mod, this.opts().essential);

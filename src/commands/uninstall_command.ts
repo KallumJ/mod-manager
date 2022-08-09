@@ -16,5 +16,5 @@ export default class UninstallCommand implements Subcommand {
                 })
             })
     }
-    
+
 }

@@ -8,7 +8,7 @@ export default class UpdateCommand implements Subcommand {
         program.command("update")
             .description("Checks for and updates mods that have a newer available version")
             .action(() => {
-                ModManager.execute(async() => {
+                ModManager.execute(async () => {
                     await Mods.update();
                 })
             })

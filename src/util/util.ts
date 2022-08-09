@@ -1,4 +1,4 @@
-import { stringSimilarity } from "string-similarity-js";
+import {stringSimilarity} from "string-similarity-js";
 
 export default class Util {
     private static readonly SIMILARITY_THRESHOLD: number = 0.8;
@@ -11,7 +11,9 @@ export default class Util {
         return str // insert a space before all caps
             .replace(/([A-Z])/g, ' $1')
             // uppercase the first character
-            .replace(/^./, function(str){ return str.toUpperCase(); })
+            .replace(/^./, function (str) {
+                return str.toUpperCase();
+            })
     }
 
     static areStringsSimilar(master: string, compare: string): boolean {
