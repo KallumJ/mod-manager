@@ -70,7 +70,7 @@ cd "$DOWNLOAD_DIR" || exit
 npm install --save || exit
 npm install -g @vercel/ncc || exit
 npx tsc || exit
-ncc build build/ts/mod-manager.js -o build/ || exit
+ncc build build/ts/mod-manager.js -o build/flat/ || exit
 
 # Install
 info "Installing..."
