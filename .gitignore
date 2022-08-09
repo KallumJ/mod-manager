@@ -133,3 +133,5 @@ dist
 server/
 
 .idea/
+
+build/

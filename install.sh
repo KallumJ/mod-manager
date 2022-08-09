@@ -3,6 +3,7 @@
 MIN_NODE_VERSION=12
 DOWNLOAD_DIR="/tmp/mod-manager-install"
 INSTALL_DIR="/usr/local/lib/mod-manager"
+BINARY_PATH="/usr/bin/mod-manager"
 CYAN="\033[1;96m"
 RED="\033[0;91m"
 GREEN="\033[0;92m"
@@ -24,6 +25,12 @@ success() {
   print "$GREEN" "$1"
 }
 
+if [ "$EUID" -ne 0 ]
+then
+  error "This script must be ran as root. Please use sudo."
+  exit
+fi
+
 rm -rf "$DOWNLOAD_DIR"
 mkdir -p "$DOWNLOAD_DIR"
 
@@ -40,14 +47,14 @@ fi
 
 # Download source files
 info "Downloading mod-manager source..."
-git clone "git@hogwarts.bits.team:Bits/mod-manager.git" "$DOWNLOAD_DIR" || exit
+git clone "https://hogwarts.bits.team/git/Bits/mod-manager.git" "$DOWNLOAD_DIR" || exit
 
 # Compile
 info "Compiling..."
 cd "$DOWNLOAD_DIR" || exit
 npm install --save
 npm install -g @vercel/ncc
-npx tsc;
+npx tsc
 ncc build build/ts/mod-manager.js -o build/flat
 
 # Install
@@ -59,7 +66,8 @@ cp -r build/flat/* "$INSTALL_DIR"
 
 # Creating executable
 info "Creating executable..."
-echo "node $INSTALL_DIR/index.js \$\@" > /usr/bin/mod-manager
+echo "node $INSTALL_DIR/index.js \$\@" > $BINARY_PATH
+chmod +x $BINARY_PATH
 
 # Cleaning up
 info "Cleaning up..."
