@@ -31,12 +31,12 @@ then
   exit
 fi
 
-rm -rf "$DOWNLOAD_DIR"
-mkdir -p "$DOWNLOAD_DIR"
+rm -rf "$DOWNLOAD_DIR" || exit
+mkdir -p "$DOWNLOAD_DIR" || exit
 
 # Verify compatible version of node is installed
 info "Verifying node verison..."
-NODE_VERSION_STR=$(node --version)
+NODE_VERSION_STR=$(node --version) || exit
 if [[ "$?" -eq 127 ]]
 then
   error "Node does not appear to be installed. Please install Node version $MIN_NODE_VERSION or higher"
@@ -60,25 +60,25 @@ git clone "https://hogwarts.bits.team/git/Bits/mod-manager.git" "$DOWNLOAD_DIR" 
 # Compile
 info "Compiling..."
 cd "$DOWNLOAD_DIR" || exit
-npm install --save
-npm install -g @vercel/ncc
-npx tsc
-ncc build build/ts/mod-manager.js -o build/flat
+npm install --save || exit
+npm install -g @vercel/ncc || exit
+npx tsc || exit
+ncc build build/ts/mod-manager.js -o build/ || exit
 
 # Install
 info "Installing..."
-rm -rf "$INSTALL_DIR"
-mkdir -p "$INSTALL_DIR"
+rm -rf "$INSTALL_DIR" || exit
+mkdir -p "$INSTALL_DIR" || exit
 
-cp -r build/flat/* "$INSTALL_DIR"
+cp -r build/flat/* "$INSTALL_DIR" || exit
 
 # Creating executable
 info "Creating executable..."
-echo "node $INSTALL_DIR/index.js \$\@" > $BINARY_PATH
-chmod +x $BINARY_PATH
+echo "node $INSTALL_DIR/index.js \$\@" > $BINARY_PATH || exit
+chmod +x $BINARY_PATH || exit
 
 # Cleaning up
 info "Cleaning up..."
-rm -rf "$DOWNLOAD_DIR"
+rm -rf "$DOWNLOAD_DIR" || exit
 
 success "Successfully installed mod-manager. Try mod-manager -h to learn more!"
