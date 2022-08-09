@@ -71,7 +71,7 @@ export default class Mods {
         }
     }
 
-    public static trackMod(mod: Mod): void {
+    public static trackMod(mod: TrackedMod): void {
         // Read current file
         const mods = this.getTrackedMods();
 
@@ -82,17 +82,17 @@ export default class Mods {
         this.writeToModFile(mods);
     }
 
-    public static getTrackedMods(): Array<Mod> {
+    public static getTrackedMods(): Array<TrackedMod> {
         const file = readFileSync(ModManager.FilePaths.MOD_FILE_PATH, "utf-8");
         return JSON.parse(file);
     }
 
-    public static writeToModFile(mods: Array<Mod>): void {
+    public static writeToModFile(mods: Array<TrackedMod>): void {
         writeFileSync(ModManager.FilePaths.MOD_FILE_PATH, JSON.stringify(mods, null, 4));
     }
 
     private static isModInstalled(id: string): boolean {
-        const modsWithId: Array<Mod> = this.getTrackedMods().filter(mod => mod.id == id);
+        const modsWithId: Array<TrackedMod> = this.getTrackedMods().filter(mod => mod.id == id);
         return !Util.isArrayEmpty(modsWithId)
     }
 
@@ -111,8 +111,8 @@ export default class Mods {
         }
     }
 
-    static silentUninstall(mod: Mod) {
-        let mods: Array<Mod> = this.getTrackedMods();
+    static silentUninstall(mod: TrackedMod) {
+        let mods: Array<TrackedMod> = this.getTrackedMods();
 
         // Remove mod from list and uninstall it
         unlinkSync(path.join(ModManager.FilePaths.MODS_FOLDER_PATH, mod.fileName));
@@ -120,7 +120,7 @@ export default class Mods {
         this.writeToModFile(mods);
     }
 
-    static areModsEqual(mod1: Mod, mod2: Mod): boolean {
+    static areModsEqual(mod1: TrackedMod, mod2: TrackedMod): boolean {
         return mod1.id === mod2.id;
     }
 
@@ -147,11 +147,11 @@ export default class Mods {
         }
     }
 
-    private static findMod(mod: string): Mod | undefined {
+    private static findMod(mod: string): TrackedMod | undefined {
         // Replace underscores with spaces
         mod = mod.replaceAll("_", " ");
 
-        let mods: Array<Mod> = this.getTrackedMods();
+        let mods: Array<TrackedMod> = this.getTrackedMods();
         for (let modEle of mods) {
             const id = modEle.id.toLowerCase();
             const name = modEle.name.toLowerCase();

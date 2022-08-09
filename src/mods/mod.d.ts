@@ -1,6 +1,6 @@
 declare global {
     // DONT FORGET TO UPDATE CONSTRUCTORS WHEN MOD SIGNATURE CHANGES
-    type Mod = {
+    type TrackedMod = {
         id: string
         name: string
         fileName: string,
