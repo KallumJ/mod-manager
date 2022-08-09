@@ -91,7 +91,7 @@ export default class Mods {
         writeFileSync(ModManager.FilePaths.MOD_FILE_PATH, JSON.stringify(mods, null, 4));
     }
 
-    private static isModInstalled(id: string): boolean {
+    public static isModInstalled(id: string): boolean {
         const modsWithId: Array<TrackedMod> = this.getTrackedMods().filter(mod => mod.id == id);
         return !Util.isArrayEmpty(modsWithId)
     }
@@ -105,6 +105,16 @@ export default class Mods {
         // IF a matching mod is found, remove it
         if (modToUninstall != undefined) {
             this.silentUninstall(modToUninstall);
+
+            for (let dependency of modToUninstall.dependencies) {
+                    if (!this.isDependedOn(dependency)) {
+                        const dependencyMod = this.findMod(dependency);
+                        if (dependencyMod != undefined) {
+                            this.silentUninstall(dependencyMod)
+                        }
+                    }
+            }
+
             spinner.succeed(`${modToUninstall.name} successfully uninstalled!`)
         } else {
             spinner.error(`${mod} was not found.`)
@@ -128,6 +138,10 @@ export default class Mods {
         const modToMark = this.findMod(mod);
 
         if (modToMark != undefined) {
+            for (let dependency of modToMark.dependencies) {
+                this.toggleEssential(dependency)
+            }
+
             let mods = this.getTrackedMods();
             // Remove mod from list
             mods = mods.filter(item => !Mods.areModsEqual(item, modToMark));
@@ -147,9 +161,15 @@ export default class Mods {
         }
     }
 
+    /**
+     * Finds the mod based on the provided id or name
+     * @param mod the id or mod name
+     * @return the found Mod, or undefined if no mod was found
+     */
     private static findMod(mod: string): TrackedMod | undefined {
-        // Replace underscores with spaces
+        // Replace underscores and dashes with spaces
         mod = mod.replaceAll("_", " ");
+        mod = mod.replaceAll("-", " ")
 
         let mods: Array<TrackedMod> = this.getTrackedMods();
         for (let modEle of mods) {
@@ -272,8 +292,8 @@ export default class Mods {
 
     /**
      * Migrates to the provided version of minecraft
-     * @param version
-     * @param force
+     * @param version the Minecraft version to migrate to
+     * @param force true if this is a force migration, false otherwise
      */
     static async migrate(version: string, force: boolean) {
         const mods = this.getTrackedMods();
@@ -321,5 +341,16 @@ export default class Mods {
 
         await MinecraftUtils.updateCurrentMinecraftVersion(version)
         PrintUtils.success(`Successfully migrated to ${version}`)
+    }
+
+    private static isDependedOn(dependency: string) {
+        const trackedMods = this.getTrackedMods();
+
+        for (let trackedMod of trackedMods) {
+            if (trackedMod.dependencies.includes(dependency)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

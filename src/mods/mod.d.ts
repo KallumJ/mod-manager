@@ -7,6 +7,7 @@ declare global {
         version: string
         source: string,
         essential: boolean,
+        dependencies: Array<string>
     }
 
     type Version = {

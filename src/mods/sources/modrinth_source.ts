@@ -96,9 +96,15 @@ export default class ModrinthSource implements ModSource {
      */
     async install(version: Version, essential: boolean): Promise<void> {
         try {
+            if (Mods.isModInstalled(version.modId)) {
+                return;
+            }
+
+            const dependencies = [];
             if (!Util.isArrayEmpty(version.dependencies)) {
                 for (let dependency of version.dependencies) {
                     await this.install(dependency, essential);
+                    dependencies.push(dependency.modId)
                 }
             }
             FileDownloader.downloadMod(version)
@@ -110,6 +116,7 @@ export default class ModrinthSource implements ModSource {
                 version: version.versionNumber,
                 source: this.getSourceName(),
                 essential: essential,
+                dependencies: dependencies
             }
 
             Mods.trackMod(mod);
@@ -246,7 +253,37 @@ export default class ModrinthSource implements ModSource {
         }
         const latestVersion = results[0];
 
-        return this.getVersionFromId(latestVersion.id);
+        const dependencies = [];
+        if (!Util.isArrayEmpty(latestVersion.dependencies)) {
+            for (let dependency of latestVersion.dependencies) {
+                if (dependency.dependency_type === "required") {
+                    const projectId = dependency.project_id;
+                    const versionId = dependency.version_id;
+
+                    dependencies.push(await this.getDependency(projectId, versionId, mcVersion))
+                }
+            }
+        }
+
+        const latestFile = latestVersion.files[0];
+
+        return {
+            modId: latestVersion.project_id,
+            versionNumber: latestVersion.version_number,
+            fileName: latestFile.filename,
+            url: latestFile.url,
+            dependencies: dependencies
+        };
+    }
+
+    async getDependency(projectId: string | undefined, versionId: string | undefined, mcVersion: string): Promise<Version> {
+        if (projectId != undefined) {
+            return this.getLatestVersion(projectId, mcVersion)
+        } else if (versionId != undefined) {
+            return this.getVersionFromVersionId(versionId, projectId, mcVersion)
+        } else {
+            throw new Error("Dependency found with no project or version id")
+        }
     }
 
     /**
@@ -285,9 +322,11 @@ export default class ModrinthSource implements ModSource {
      * 	]
      * }
      * @param versionId the version id to transform into an object
+     * @param projectId the project id of this version
+     * @param mcVersion the Minecraft version we are downloading for
      * @return the Version object
      */
-    async getVersionFromId(versionId: string): Promise<Version> {
+    async getVersionFromVersionId(versionId: string, projectId: string | undefined, mcVersion: string): Promise<Version> {
         const response = await axios.get(format(ModrinthSource.SINGLE_VERSION_URL, versionId));
         const latestVersion = await response.data;
 
@@ -296,7 +335,7 @@ export default class ModrinthSource implements ModSource {
         const dependencies = [];
         if (!Util.isArrayEmpty(latestVersion.dependencies)) {
             for (let dependency of latestVersion.dependencies) {
-                dependencies.push(await this.getVersionFromId(dependency.version_id))
+                dependencies.push(await this.getDependency(projectId, dependency.version_id, mcVersion))
             }
         }
 

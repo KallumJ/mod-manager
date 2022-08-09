@@ -11,7 +11,7 @@ import {ListCommand} from "./commands/list_command.js";
 import UninstallCommand from "./commands/uninstall_command.js";
 import EssentialCommand from "./commands/essential_command.js";
 import {readFileSync, unlinkSync} from "fs";
-import UpdateCommand from "./commands/upgrade_command.js";
+import UpdateCommand from "./commands/update_command.js";
 import MigratePossibleCommand from "./commands/migrate_possible.js";
 import MigrateCommand from "./commands/migrate_command.js";
 import ModrinthSource from "./mods/sources/modrinth_source.js";
