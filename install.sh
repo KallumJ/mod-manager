@@ -64,7 +64,7 @@ npm install --save
 npm install -g @vercel/ncc
 npx tsc
 
-if [[ -n "$NVM_DIR" ]]
+if [[ -v "$NVM_DIR" ]]
 then
   ln -s "$NVM_DIR/versions/node/$NODE_VERSION_STR/bin/ncc" "/usr/local/bin/ncc"
 fi
