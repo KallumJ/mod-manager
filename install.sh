@@ -36,7 +36,15 @@ mkdir -p "$DOWNLOAD_DIR"
 
 # Verify compatible version of node is installed
 info "Verifying node verison..."
-NODE_VERSION=$( (node --version | sed 's/\..*//') | sed "s/v//")
+NODE_VERSION_STR=$(node --version)
+if [[ "$?" -eq 127 ]]
+then
+  error "Node either is not installed, or is not on the root path.\n If you installed Node using NVM, see this link, ensuring links are made for node, npm and npx: https://stackoverflow.com/questions/21215059/cant-use-nvm-from-root-or-sudo"
+  exit
+fi
+
+
+NODE_VERSION=$( (echo $NODE_VERSION_STR | sed 's/\..*//') | sed "s/v//")
 if [[ "$NODE_VERSION" -ge "$MIN_NODE_VERSION" ]]
 then
   success "A version of node greater than $MIN_NODE_VERSION is installed!"
