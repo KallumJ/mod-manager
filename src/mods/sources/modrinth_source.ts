@@ -61,7 +61,7 @@ export default class ModrinthSource implements ModSource {
                     dependencies.push(dependency.modId)
                 }
             }
-            FileDownloader.downloadMod(version)
+            await FileDownloader.downloadMod(version)
 
             const mod = {
                 name: await this.getProjectName(version.modId),
@@ -128,13 +128,15 @@ export default class ModrinthSource implements ModSource {
         }
 
         const latestFile = latestVersion.files[0];
+        const checksum = latestFile.hashes.sha1;
 
         return {
             modId: latestVersion.project_id,
             versionNumber: latestVersion.version_number,
             fileName: latestFile.filename,
             url: latestFile.url,
-            dependencies: dependencies
+            dependencies: dependencies,
+            checksum: checksum
         };
     }
 
@@ -201,12 +203,15 @@ export default class ModrinthSource implements ModSource {
             }
         }
 
+        const checksum = latestFile.hashes.sha1;
+
         return {
             modId: latestVersion.project_id,
             versionNumber: latestVersion.version_number,
             fileName: latestFile.filename,
             url: latestFile.url,
-            dependencies: dependencies
+            dependencies: dependencies,
+            checksum: checksum
         };
     }
 }

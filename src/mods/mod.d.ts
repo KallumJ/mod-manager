@@ -15,7 +15,8 @@ declare global {
         fileName: string,
         url: string
         versionNumber: string,
-        dependencies: Array<Version>
+        dependencies: Array<Version>,
+        checksum: string
     }
 }
 

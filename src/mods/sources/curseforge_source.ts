@@ -13,7 +13,7 @@ export class CurseforgeSource implements ModSource {
     private static readonly SEARCH_URL: string = `${CurseforgeSource.BASE_URL}/mods/search`;
     private static readonly GET_MOD_URL: string = `${CurseforgeSource.BASE_URL}/mods/%s`
     private static readonly GET_FILE_URL: string = `${CurseforgeSource.BASE_URL}/mods/%s/files/%s`
-    private static readonly DOWNLOAD_CDN_URL: string = "https://edge.forgecdn.net/files/%s/%s/%s";
+    private static readonly DOWNLOAD_CDN_URL: string = "https://mediafiles.forgecdn.net/files/%s/%s/%s";
 
     private static readonly MINECRAFT_ID: number = 432;
     private static readonly FABRIC_TYPE: number = 4;
@@ -49,14 +49,24 @@ export class CurseforgeSource implements ModSource {
             }
         }
 
-        const downloadUrl = fileObj.downloadUrl != null ? fileObj.downloadUrl : this.constructDownloadUrl(id, fileObj.fileName);
+        const downloadUrl = fileObj.downloadUrl != null ? fileObj.downloadUrl : this.constructDownloadUrl(fileObj.id, fileObj.fileName);
+        const hashes = fileObj.hashes;
+
+        let checksum: string = "";
+        for (let hash of hashes) {
+            // If the algorithm for this hash was sha1
+            if (hash.algo == 1) {
+                checksum = hash.value;
+            }
+        }
 
         return {
             modId: id.toString(),
             fileName: fileObj.fileName,
             url: downloadUrl,
             versionNumber: fileObj.displayName,
-            dependencies: dependencies
+            dependencies: dependencies,
+            checksum: checksum
         }
     }
 
@@ -92,7 +102,7 @@ export class CurseforgeSource implements ModSource {
                     dependencies.push(dependency.modId)
                 }
             }
-            FileDownloader.downloadMod(version)
+            await FileDownloader.downloadMod(version)
 
             const mod = {
                 name: await this.getProjectName(version.modId),
