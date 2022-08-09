@@ -81,7 +81,7 @@ cp -r build/flat/* "$INSTALL_DIR" || exit
 
 # Creating executable
 info "Creating executable..."
-echo "node $INSTALL_DIR/index.js \$\@" > $BINARY_PATH || exit
+echo "node $INSTALL_DIR/index.js \$@" > $BINARY_PATH || exit
 chmod +x $BINARY_PATH || exit
 
 # Cleaning up
