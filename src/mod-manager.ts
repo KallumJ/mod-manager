@@ -16,6 +16,7 @@ import MigratePossibleCommand from "./commands/migrate_possible.js";
 import MigrateCommand from "./commands/migrate_command.js";
 import ModrinthSource from "./mods/sources/modrinth_source.js";
 import Mods from "./mods/mods.js";
+import {CurseforgeSource} from "./mods/sources/curseforge_source.js";
 
 export default class ModManager {
     public static logger: Logger | null = null;
@@ -42,7 +43,7 @@ export default class ModManager {
         public static readonly MODS_FOLDER_PATH = path.join("mods")
     }
 
-    static async init() {
+    static init() {
         if (Initialiser.isInitialised()) {
             this.logger = ModManager.createLogger();
         }
@@ -55,11 +56,8 @@ export default class ModManager {
             command.registerCommand(this.program);
         }
 
-       /* const source = new CurseforgeSource();
-        console.log(await source.search("lithium"))*/
-
         Mods.registerSource(new ModrinthSource())
-        //Mods.registerSource(new CurseforgeSource(), "CURSEFORGE_API_KEY")
+        Mods.registerSource(new CurseforgeSource(), "CURSEFORGE_API_KEY")
 
         this.program.showSuggestionAfterError();
         this.program.showHelpAfterError();
