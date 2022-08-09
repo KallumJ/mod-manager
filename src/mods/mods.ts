@@ -2,7 +2,7 @@ import path from "path";
 import PrintUtils from "../util/print_utils.js";
 import ModSource from "./sources/mod_source.js";
 import ModNotFoundError from "../errors/mod_not_found_error.js";
-import {readFileSync, unlinkSync, writeFileSync} from "fs";
+import {readdirSync, readFileSync, unlinkSync, writeFileSync} from "fs";
 import Util from "../util/util.js";
 import ModManager from "../mod-manager.js";
 import MinecraftUtils from "../util/minecraft_utils.js";
@@ -314,6 +314,27 @@ export default class Mods {
 
         await MinecraftUtils.updateCurrentMinecraftVersion(version)
         PrintUtils.success(`Successfully migrated to ${version}`)
+
+        const untrackedMods = Mods.getUntrackedMods();
+        if (!Util.isArrayEmpty(untrackedMods)) {
+            PrintUtils.warn(`The following mods are untracked and will need manual migration:`)
+            for (let untrackedMod of untrackedMods) {
+                PrintUtils.warn(untrackedMod);
+            }
+        }
+    }
+
+    static getUntrackedMods(): string[] {
+        let allMods = readdirSync(ModManager.FilePaths.MODS_FOLDER_PATH);
+        const trackedMods = Mods.getTrackedMods();
+        const untrackedMods = [];
+        for (let mod of allMods) {
+            if (Util.isArrayEmpty(trackedMods.filter(trackedModObj => trackedModObj.fileName == mod))) {
+                untrackedMods.push(mod);
+            }
+        }
+
+        return untrackedMods;
     }
 
     /**
