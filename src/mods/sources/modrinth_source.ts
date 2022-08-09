@@ -18,53 +18,7 @@ export default class ModrinthSource implements ModSource {
 
     /**
      * Searches Modrinth for the specified query
-     * Example shape of data returned by query:
-     * {
-     * 	"hits": [
-     * 		{
-     * 			"project_id": "gvQqBUqZ",
-     * 			"project_type": "mod",
-     * 			"slug": "lithium",
-     * 			"author": "jellysquid3",
-     * 			"title": "Lithium",
-     * 			"description": "No-compromises game logic/server optimization mod",
-     * 			"categories": [
-     * 				"optimization",
-     * 				"fabric"
-     * 			],
-     * 			"display_categories": [
-     * 				"optimization",
-     * 				"fabric"
-     * 			],
-     * 			"versions": [
-     * 				"1.16.2",
-     * 				"1.16.3",
-     * 				"1.16.4",
-     * 				"1.16.5",
-     * 				"1.17",
-     * 				"1.17.1",
-     * 				"1.18",
-     * 				"1.18.1",
-     * 				"1.18.2",
-     * 				"1.19",
-     * 				"1.19.1"
-     * 			],
-     * 			"downloads": 223103,
-     * 			"follows": 1866,
-     * 			"icon_url": "https://cdn.modrinth.com/data/gvQqBUqZ/icon.png",
-     * 			"date_created": "2021-01-03T00:56:52.292581Z",
-     * 			"date_modified": "2022-07-29T22:18:05.703354Z",
-     * 			"latest_version": "1.19.1",
-     * 			"license": "lgpl-3",
-     * 			"client_side": "optional",
-     * 			"server_side": "optional",
-     * 			"gallery": []
-     * 		}
-     * 	],
-     * 	"offset": 0,
-     * 	"limit": 1,
-     * 	"total_hits": 1
-     * }
+     * Example shape of data returned by query: https://controlc.com/e04a9fb9
      * @param query the query to search for
      * @throws ModNotFoundError if the query returns no results.
      * @returns The mod id of the found mod
@@ -131,65 +85,7 @@ export default class ModrinthSource implements ModSource {
 
     /**
      * Gets the name of the project with the provided id
-     * Example Shape of data from the query:
-     * {
-     * 	"id": "gvQqBUqZ",
-     * 	"slug": "lithium",
-     * 	"project_type": "mod",
-     * 	"team": "peSx5UYg",
-     * 	"title": "Lithium",
-     * 	"description": "No-compromises game logic/server optimization mod",
-     * 	"body": "...",
-     * 	"body_url": "https://cdn.modrinth.com/data/gvQqBUqZ/description.md",
-     * 	"published": "2021-01-03T00:56:52.292581Z",
-     * 	"updated": "2022-07-29T22:18:05.703354Z",
-     * 	"approved": "2021-01-03T00:56:52.292581Z",
-     * 	"status": "approved",
-     * 	"moderator_message": null,
-     * 	"license": {
-     * 		"id": "lgpl-3",
-     * 		"name": "GNU Lesser General Public License v3",
-     * 		"url": "https://cdn.modrinth.com/licenses/lgpl-3.txt"
-     * 	},
-     * 	"client_side": "optional",
-     * 	"server_side": "optional",
-     * 	"downloads": 225038,
-     * 	"followers": 1872,
-     * 	"categories": [
-     * 		"optimization"
-     * 	],
-     * 	"additional_categories": [],
-     * 	"versions": [
-     * 		"2w527DB2",
-     * 		"ZRR9yqHD",
-     * 		"aZ0JFf08",
-     * 		"cTZv31gu",
-     * 		"igqdFUYG",
-     * 		"nVR7Q63z",
-     * 		"ouTdXXWj",
-     * 		"pGhOMdTm",
-     * 		"pHl1Vi6k",
-     * 		"pXdccFQf",
-     * 		"rvsW1zhb",
-     * 		"sIKhU9s4",
-     * 		"5fmGl08Y",
-     * 		"7jxErppe",
-     * 		"EhG1mQzx",
-     * 		"Ehsd7YUl",
-     * 		"FHFKMKeu",
-     * 		"Le0tKjFX",
-     * 		"2CbyxeU0",
-     * 		"MoF1cn6g",
-     * 		"2aoHIXuK"
-     * 	],
-     * 	"icon_url": "https://cdn.modrinth.com/data/gvQqBUqZ/icon.png",
-     * 	"issues_url": "https://github.com/jellysquid3/lithium-fabric/issues",
-     * 	"source_url": "https://github.com/jellysquid3/lithium-fabric",
-     * 	"wiki_url": null,
-     * 	"discord_url": "https://jellysquid.me/discord",
-     * 	"donation_urls": [],
-     * 	"gallery": []
-     * }
+     * Example Shape of data from the query: https://controlc.com/7a9d5ff3
      * @param id the id to get the name of
      * @return The found project name
      */
@@ -200,44 +96,10 @@ export default class ModrinthSource implements ModSource {
 
     /**
      * Gets the latest version of the mod
-     * Example shape of data returned by query:
-     * [
-     *    {
-     * 		"id": "ZRR9yqHD",
-     * 		"project_id": "gvQqBUqZ",
-     * 		"author_id": "uhPSqlnd",
-     * 		"featured": false,
-     * 		"name": "Lithium 0.8.3",
-     * 		"version_number": "mc1.19.1-0.8.3",
-     * 		"changelog": "Lithium 0.8.3 is the second release for 1.19.1! It includes a bugfix too!\n\n## Fixes\n- fix: update chunk serialization patch to new mappings\n\nYou can donate on patreon: https://www.patreon.com/2No2Name\n",
-     * 		"changelog_url": null,
-     * 		"date_published": "2022-07-29T22:18:09.072973Z",
-     * 		"downloads": 3592,
-     * 		"version_type": "release",
-     * 		"files": [
-     * 			{
-     * 				"hashes": {
-     * 					"sha1": "9ef9f10f62d4c19b736fe493f2a11d737fbe3d7c",
-     * 					"sha512": "a3b623b4c14f6ba46d1486ffb3d1ba3174e3317b419b2ddfdf7bb572244e706d2e0a37bdce169c94455bec00fd107530ba78d7e611162a632cc6950e6a625433"
-     * 				},
-     * 				"url": "https://cdn.modrinth.com/data/gvQqBUqZ/versions/mc1.19.1-0.8.3/lithium-fabric-mc1.19.1-0.8.3.jar",
-     * 				"filename": "lithium-fabric-mc1.19.1-0.8.3.jar",
-     * 				"primary": true,
-     * 				"size": 476619
-     * 			}
-     * 		],
-     * 		"dependencies": [],
-     * 		"game_versions": [
-     * 			"1.19.1"
-     * 		],
-     * 		"loaders": [
-     * 			"fabric"
-     * 		]
-     * 	}
-     * ]
-     * @param id
-     * @param mcVersion
-     * @throws ModNotFoundError if there are no versions available for the current Minecraft Version
+     * Example shape of data returned by query: https://controlc.com/ee4a2c1c
+     * @param id the project id of the mod
+     * @param mcVersion the minecraft version to check for
+     * @throws ModNotFoundError if there are no versions available for the provided Minecraft Version
      */
     async getLatestVersion(id: string, mcVersion: string): Promise<Version> {
         const params = {

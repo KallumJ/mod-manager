@@ -18,6 +18,14 @@ export class CurseforgeSource implements ModSource {
     private static readonly MINECRAFT_ID: number = 432;
     private static readonly FABRIC_TYPE: number = 4;
 
+    /**
+     * Gets the latest version of the mod
+     * Example shape of data returned by GET_MOD query: https://controlc.com/faaf3b24
+     * Example shape of data returned by GET_FILE query: https://controlc.com/a841fc0b
+     * @param id the mod id of the mod
+     * @param mcVersion the Minecraft version to check for
+     * @throws ModNotFoundError if there are no versions available for the provided Minecraft Version
+     */
     async getLatestVersion(id: string, mcVersion: string): Promise<Version> {
         const modResponse = await this.makeRequest(format(CurseforgeSource.GET_MOD_URL, id));
         const latestFiles: Array<any> = modResponse.data.latestFilesIndexes;
@@ -52,6 +60,10 @@ export class CurseforgeSource implements ModSource {
         }
     }
 
+    /**
+     * Gets the name of the mod with the provided id
+     * @param id the mod id
+     */
     async getProjectName(id: string): Promise<string> {
         const response = await this.makeRequest(format(CurseforgeSource.GET_MOD_URL, id))
         return response.data.name;
@@ -61,6 +73,12 @@ export class CurseforgeSource implements ModSource {
         return "Curseforge";
     }
 
+    /**
+     * Installs the provided Version
+     * @param version the Version to install
+     * @param essential whether this mod is essential or not
+     * @throws DownloadError if an error occurs when downloading
+     */
     async install(version: Version, essential: boolean): Promise<void> {
         try {
             if (Mods.isModInstalled(version.modId)) {
@@ -92,6 +110,11 @@ export class CurseforgeSource implements ModSource {
         }
     }
 
+    /**
+     * Searches for a mod matching the provided query
+     * Example response from query: https://controlc.com/ac06bc3d
+     * @param query the query to search for
+     */
     async search(query: string): Promise<string> {
         const mcVersion = await MinecraftUtils.getCurrentMinecraftVersion();
 
