@@ -22,11 +22,19 @@ export class ListCommand implements Subcommand {
                     const mods = Mods.getTrackedMods();
 
                     if (!Util.isArrayEmpty(mods)) {
-                        PrintUtils.info(tableFunc(Mods.getTrackedMods()))
+                        PrintUtils.info("Tracked Mods:")
+                        PrintUtils.info(tableFunc(mods))
                     } else {
-                        PrintUtils.warn("There are no mods installed yet! Try mod-manager install -h to figure out more!")
+                        PrintUtils.warn("There are no mods tracked yet! Try mod-manager install -h to figure out more!")
                     }
 
+                    const untrackedMods = Mods.getUntrackedMods();
+                    if (!Util.isArrayEmpty(untrackedMods)) {
+                        PrintUtils.warn("\nUntracked Mods: ")
+                        for (let untrackedMod of untrackedMods) {
+                            PrintUtils.warn(untrackedMod)
+                        }
+                    }
                 })
             })
     }
