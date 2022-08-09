@@ -1,11 +1,62 @@
+
 # Mod Manager
 
-A package manager-like CLI utility for installing, upgrading and migrating mods on Fabric Minecraft Servers
+A package manager-like CLI utility for managing installing, updating and migrating mods on Fabric Minecraft Servers.
 
-## Envrionment Variables
 
-The list of required variables are as follows:
+## Features
+
+- Installing mods from Modrinth and Curseforge
+- Uninstalling mods
+- Updating mods with a single command
+- Migrating mods to a new Minecraft version
+
+
+## Demo
+
+![A terminal window showing the usage of mod-managher](https://i.imgur.com/J8zw89M.gif)
+
+
+## Usage/Examples
 
 ```
-CURSEFORGE_API_KEY="**api key goes here**"
+$ mod-manager
+Usage: mod-manager [options] [command]
+
+A package (mod) manager for Fabric Minecraft Servers
+
+Options:
+  -v, --version                         Reports the version of the Minecraft server
+  -h, --help                            display help for command
+
+Commands:
+  init                                  Initialises mod manager
+  install [options] <mods...>           Installs the provided mods
+  list                                  Lists installed mods
+  uninstall <mods...>                   Uninstalls the provided mods
+  essential <mods...>                   Toggles the mods essential statuses
+  update                                Checks for and updates mods that have a newer available version
+  migrate-possible [options] [version]  Reports whether it is possible to upgrade to the provided Minecraft version
+  migrate [options] [version]           Migrates all mods to provided Minecraft version
+  help [command]                        display help for command
 ```
+
+
+## Environment Variables
+
+The following are the required environment variables for running Mod Manager
+
+`CURSEFORGE_API_KEY # Set to your api key for curseforge. Leaving it unset will skip all Curseforge related functionality`
+
+
+## Installation
+
+### Prerequisites
+* A version of Node.js greater than 12 must be installed, along with npm and npx.
+
+Mod Manager can be installed with the following command (watch out for the sudo password prompt, it can be hard to spot)
+
+```bash
+curl https://hogwarts.bits.team/git/Bits/mod-manager/raw/branch/master/install.sh | sudo -E env "PATH=$PATH" bash
+```
+    
