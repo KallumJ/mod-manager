@@ -63,6 +63,11 @@ cd "$DOWNLOAD_DIR" || exit
 npm install --save
 npm install -g @vercel/ncc
 npx tsc
+
+if [[ -n "$NVM_DIR" ]]
+then
+  ln -s "$NVM_DIR/versions/node/$NODE_VERSION_STR/bin/ncc" "/usr/local/bin/ncc"
+fi
 ncc build build/ts/mod-manager.js -o build/flat
 
 # Install
