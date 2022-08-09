@@ -14,7 +14,7 @@ A package manager-like CLI utility for managing installing, updating and migrati
 
 ## Demo
 
-![A terminal window showing the usage of mod-managher](https://i.imgur.com/J8zw89M.gif)
+![A terminal window showing the usage of mod-manager](https://i.imgur.com/J8zw89M.gif)
 
 
 ## Usage/Examples
@@ -41,6 +41,26 @@ Commands:
   help [command]                        display help for command
 ```
 
+Initialising Mod Manager:
+```
+$ mod-manager init
+? What Minecraft version is your server running? 1.19.1
+Sucessfully initialised Mod Manager!
+```
+
+Installing a mod: 
+```
+$ mod-manager install lithium
+✔ Successfully installed Lithium
+```
+
+Listing installed mods:
+```
+$ mod-manager list
+Name    | Id       | File Name                         | Version        | Source   | Essential | Dependencies
+-------------------------------------------------------------------------------------------------------------
+Lithium | gvQqBUqZ | lithium-fabric-mc1.19.2-0.8.3.jar | mc1.19.2-0.8.3 | Modrinth | false     |
+```
 
 ## Environment Variables
 
