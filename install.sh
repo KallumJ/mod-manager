@@ -36,10 +36,17 @@ mkdir -p "$DOWNLOAD_DIR" || exit
 
 # Verify compatible version of node is installed
 info "Verifying node verison..."
-NODE_VERSION_STR=$(node --version) || exit
+NODE_VERSION_STR=$(node --version)
 if [[ "$?" -eq 127 ]]
 then
   error "Node does not appear to be installed. Please install Node version $MIN_NODE_VERSION or higher"
+  exit
+fi
+
+npm --version
+if [[ "$?" -eq 127 ]]
+then
+  error "Npm does not appear to be installed. Please install npm and re run the installer"
   exit
 fi
 
