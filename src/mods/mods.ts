@@ -65,6 +65,7 @@ export default class Mods {
                         }
                     } else {
                         spinner.error(`Mod ${projectName} is already installed.`)
+                        return;
                     }
                 }
             }
