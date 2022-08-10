@@ -203,7 +203,7 @@ export default class Mods {
     }
 
     static getSourceFromName(name: string): ModSource {
-        const source = this.MOD_SOURCES.filter(src => src.getSourceName() === name)[0];
+        const source = this.MOD_SOURCES.find(src => src.getSourceName() === name);
         if (source == undefined) {
             throw new Error(`There is no source registered with the name ${name}`)
         }
