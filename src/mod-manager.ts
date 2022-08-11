@@ -18,6 +18,7 @@ import ModrinthSource from "./mods/sources/modrinth_source.js";
 import Mods from "./mods/mods.js";
 import {CurseforgeSource} from "./mods/sources/curseforge_source.js";
 import MinecraftUtils from "./util/minecraft_utils.js";
+import chalk from "chalk";
 
 export default class ModManager {
     public static logger: Logger | null = null;
@@ -46,10 +47,14 @@ export default class ModManager {
             this.logger = ModManager.createLogger();
         }
 
+        const version = Initialiser.isInitialised() ?
+            await MinecraftUtils.getCurrentMinecraftVersion() :
+            chalk.redBright("Not Initialised. See `mod-manager init -h` for more details!")
+
         this.program
             .name('mod-manager')
             .description('A package (mod) manager for Fabric Minecraft Servers')
-            .version(`Minecraft server version: ${await MinecraftUtils.getCurrentMinecraftVersion()}`, "-v, --version", "Reports the version of the Minecraft server");
+            .version(`Minecraft server version: ${version}`, "-v, --version", "Reports the version of the Minecraft server");
 
 
         for (const command of this.subcommands) {
