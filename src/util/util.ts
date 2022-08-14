@@ -1,4 +1,5 @@
 import {stringSimilarity} from "string-similarity-js";
+import inquirer from "inquirer";
 
 export default class Util {
     private static readonly SIMILARITY_THRESHOLD: number = 0.8;
@@ -22,7 +23,24 @@ export default class Util {
         return stringSimilarity(master, compare) >= this.SIMILARITY_THRESHOLD;
     }
 
-    static getBoolFromYesNo(answer: string) {
+    static async getYesNoFromUser(question: string) {
+        const answer = await inquirer.prompt([{
+            type: "input",
+            name: "confirm",
+            message: question,
+            async validate(input: any): Promise<string | boolean> {
+                const lowerInput = input.toLowerCase();
+                const valid = lowerInput === "y" || lowerInput === "n" ;
+                if (!valid) {
+                    return "Please answer either y or n"
+                }
+                return valid
+            },
+        }])
+        return Util.getBoolFromYesNo(answer.confirm);
+    }
+
+    private static getBoolFromYesNo(answer: string) {
         if (answer.toLowerCase() === "y") {
             return true;
         } else if (answer.toLowerCase() === "n") {

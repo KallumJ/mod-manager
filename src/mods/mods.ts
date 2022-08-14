@@ -7,7 +7,6 @@ import Util from "../util/util.js";
 import ModManager from "../mod-manager.js";
 import MinecraftUtils from "../util/minecraft_utils.js";
 import MigrateError from "../errors/migrate_error.js";
-import inquirer from "inquirer";
 import { StringBuilder } from 'typescript-string-operations';
 import chalk from "chalk";
 
@@ -24,34 +23,36 @@ export default class Mods {
         this.MOD_SOURCES.push(source);
     }
 
-    public static async install(mod: string, essential: boolean): Promise<void> {
-        let success: boolean = false;
-
+    public static async install(mod: string, essential: boolean, confirm: boolean): Promise<void> {
         // Go through each mod source
         for (const source of this.MOD_SOURCES) {
-            // If we have not yet successfully installed the queried mod
-            if (!success) {
-                const spinner = new PrintUtils.Spinner(`Searching for ${mod}...`);
-                spinner.start();
+            const spinner = new PrintUtils.Spinner(`Searching for ${mod}...`);
+            spinner.start();
 
-                // Search for the mod
-                let id: string | undefined;
-                try {
-                    id = await source.search(mod);
-                } catch (e) {
-                    if (e instanceof ModNotFoundError) {
-                        spinner.stop(`Mod ${mod} not found on ${source.getSourceName()}`)
-                    } else {
-                        spinner.error(`An error occurred searching for ${mod} on ${source.getSourceName()}. Skipping ${source.getSourceName()}`)
-                        // Try the next source
-                        continue;
-                    }
+            // Search for the mod
+            let id: string | undefined;
+            try {
+                id = await source.search(mod);
+            } catch (e) {
+                if (e instanceof ModNotFoundError) {
+                    spinner.stop(`Mod ${mod} not found on ${source.getSourceName()}`)
+                } else {
+                    spinner.error(`An error occurred searching for ${mod} on ${source.getSourceName()}. Skipping ${source.getSourceName()}`)
+                }
+            }
+
+            // If a mod is found
+            if (id != undefined) {
+                const projectName = await source.getProjectName(id);
+
+                // Ask user whether this mod is correct
+                if (!confirm) {
+                    spinner.pause();
+                    confirm = await Util.getYesNoFromUser(`Confirm installation of ${projectName} from ${source.getSourceName()}? (y/n)`)
                 }
 
-                // If a mod is found, install it
-                if (id != undefined) {
-                    const projectName = await source.getProjectName(id);
-
+                // If user has confirmed installation
+                if (confirm) {
                     // If mod is not already installed
                     if (!this.isModInstalled(id)) {
                         spinner.updateText(`Installing ${projectName}...`)
@@ -61,7 +62,7 @@ export default class Mods {
                             await source.install(latestVersion, essential);
 
                             spinner.succeed(`Successfully installed ${projectName}`);
-                            success = true;
+                            return;
                         } catch (e) {
                             // Log the error, and continue to next source
                             spinner.error(e);
@@ -120,20 +121,8 @@ export default class Mods {
                 spinner.pause();
 
                 const dependantMods = Mods.getDependantMods(modToUninstall.id);
-                const answer = await inquirer.prompt([{
-                    type: "input",
-                    name: "delete",
-                    message: chalk.yellowBright(`${modToUninstall.name} is depended on by ${Mods.modListToSting(dependantMods)}. Are you sure you would like to uninstall? (y/n)`),
-                    async validate(input: any): Promise<string | boolean> {
-                        const lowerInput = input.toLowerCase();
-                        const valid = lowerInput === "y" || lowerInput === "n" ;
-                        if (!valid) {
-                            return "Please answer either y or n"
-                        }
-                        return valid
-                    },
-                }])
-                del = Util.getBoolFromYesNo(answer.delete);
+                const question = chalk.yellowBright(`${modToUninstall.name} is depended on by ${Mods.modListToSting(dependantMods)}. Are you sure you would like to uninstall? (y/n)`);
+                del = await Util.getYesNoFromUser(question);
             }
 
             // If we are deleting this mod, uninstall it
