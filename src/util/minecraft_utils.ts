@@ -3,7 +3,6 @@ import axios from "axios";
 import ModManager from "../mod-manager.js";
 import MinecraftVersionError from "../errors/minecraft_version_error.js";
 import inquirer from "inquirer";
-import PrintUtils from "./print_utils.js";
 
 export default class MinecraftUtils {
     static async getCurrentMinecraftVersion(): Promise<string> {
@@ -37,29 +36,19 @@ export default class MinecraftUtils {
     }
 
     public static async getMinecraftVersionFromInput(question: string) {
-        let isVersionValid = false;
-
-        let version: string | undefined = undefined;
-        while (!isVersionValid) {
-            const answer = await inquirer.prompt([{
-                type: "input",
-                name: "minecraft_version",
-                message: question
-            }])
-            version = answer.minecraft_version;
-
-            if (await MinecraftUtils.isValidVersion(version)) {
-                isVersionValid = true;
-            } else {
-                PrintUtils.error(`${version} is not a valid Minecraft version for a Fabric server. Please try again`);
-            }
-        }
-
-        if (version == undefined) {
-            throw new MinecraftVersionError("Escaped version input without a valid version")
-        }
-
-        return version;
+        const answer = await inquirer.prompt([{
+            type: "input",
+            name: "minecraft_version",
+            message: question,
+            async validate(input: any): Promise<string | boolean> {
+                const valid = await MinecraftUtils.isValidVersion(input);
+                if (!valid) {
+                    return "That is not a valid Minecraft Version"
+                }
+                return valid
+            },
+        }])
+        return answer.minecraft_version;
     }
 
 }
