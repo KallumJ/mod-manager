@@ -23,16 +23,30 @@ export default class Mods {
         this.MOD_SOURCES.push(source);
     }
 
+    private static async isValidModId(id: string, source: ModSource) {
+        const mcVersion = await MinecraftUtils.getCurrentMinecraftVersion();
+        try {
+            await source.getLatestVersion(id, mcVersion);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
     public static async install(mod: string, essential: boolean, confirm: boolean): Promise<void> {
         // Go through each mod source
         for (const source of this.MOD_SOURCES) {
             const spinner = new PrintUtils.Spinner(`Searching for ${mod}...`);
             spinner.start();
 
-            // Search for the mod
+            // Determine queried mod id
             let id: string | undefined;
             try {
-                id = await source.search(mod);
+                if (await this.isValidModId(mod, source)) {
+                    id = mod;
+                } else {
+                    id = await source.search(mod);
+                }
             } catch (e) {
                 if (e instanceof ModNotFoundError) {
                     spinner.stop(`Mod ${mod} not found on ${source.getSourceName()}`)
