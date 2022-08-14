@@ -144,7 +144,8 @@ export default class ModrinthSource implements ModSource {
         if (projectId != undefined) {
             return this.getLatestVersion(projectId, mcVersion)
         } else if (versionId != undefined) {
-            return this.getVersionFromVersionId(versionId, projectId, mcVersion)
+            const projectId = await this.getProjectFromVersionId(versionId);
+            return this.getLatestVersion(projectId, mcVersion);
         } else {
             throw new Error("Dependency found with no project or version id")
         }
@@ -186,32 +187,11 @@ export default class ModrinthSource implements ModSource {
      * 	]
      * }
      * @param versionId the version id to transform into an object
-     * @param projectId the project id of this version
-     * @param mcVersion the Minecraft version we are downloading for
      * @return the Version object
      */
-    async getVersionFromVersionId(versionId: string, projectId: string | undefined, mcVersion: string): Promise<Version> {
+    async getProjectFromVersionId(versionId: string): Promise<string> {
         const response = await axios.get(format(ModrinthSource.SINGLE_VERSION_URL, versionId));
         const latestVersion = await response.data;
-
-        const latestFile = latestVersion.files[0];
-
-        const dependencies = [];
-        if (!Util.isArrayEmpty(latestVersion.dependencies)) {
-            for (let dependency of latestVersion.dependencies) {
-                dependencies.push(await this.getDependency(projectId, dependency.version_id, mcVersion))
-            }
-        }
-
-        const checksum = latestFile.hashes.sha1;
-
-        return {
-            modId: latestVersion.project_id,
-            versionNumber: latestVersion.version_number,
-            fileName: latestFile.filename,
-            url: latestFile.url,
-            dependencies: dependencies,
-            checksum: checksum
-        };
+        return latestVersion.project_id;
     }
 }
