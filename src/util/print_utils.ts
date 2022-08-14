@@ -24,6 +24,10 @@ export default class PrintUtils {
             this.spinner.stopAndPersist();
         }
 
+        public pause() {
+            this.spinner.stop();
+        }
+
         public error(print: string | Error) {
             if (print instanceof Error) {
                 this.spinner.fail(print.message)

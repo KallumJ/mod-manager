@@ -7,6 +7,9 @@ import Util from "../util/util.js";
 import ModManager from "../mod-manager.js";
 import MinecraftUtils from "../util/minecraft_utils.js";
 import MigrateError from "../errors/migrate_error.js";
+import inquirer from "inquirer";
+import { StringBuilder } from 'typescript-string-operations';
+import chalk from "chalk";
 
 export default class Mods {
     private static readonly MOD_SOURCES: Array<ModSource> = [];
@@ -97,26 +100,60 @@ export default class Mods {
         return !Util.isArrayEmpty(modsWithId)
     }
 
-    static uninstall(mod: string) {
+    private static getDependantMods(dependency: string) {
+        return this.getTrackedMods().filter(mod => mod.dependencies.includes(dependency))
+    }
+
+    static async uninstall(mod: string) {
         // Find mod to uninstall
+        const modToUninstall = this.findMod(mod);
+
         const spinner = new PrintUtils.Spinner(`Uninstalling ${mod}...`)
         spinner.start();
 
-        const modToUninstall = this.findMod(mod);
-        // IF a matching mod is found, remove it
+        // If a matching mod is found, remove it
         if (modToUninstall != undefined) {
-            this.silentUninstall(modToUninstall);
 
-            for (let dependency of modToUninstall.dependencies) {
-                if (!this.isDependedOn(dependency)) {
-                    const dependencyMod = this.findMod(dependency);
-                    if (dependencyMod != undefined) {
-                        this.silentUninstall(dependencyMod)
-                    }
-                }
+            // Ensure the user wants to delete this mod
+            let del = true;
+            if (Mods.isDependedOn(modToUninstall.id)) {
+                spinner.pause();
+
+                const dependantMods = Mods.getDependantMods(modToUninstall.id);
+                const answer = await inquirer.prompt([{
+                    type: "input",
+                    name: "delete",
+                    message: chalk.yellowBright(`${modToUninstall.name} is depended on by ${Mods.modListToSting(dependantMods)}. Are you sure you would like to uninstall? (y/n)`),
+                    async validate(input: any): Promise<string | boolean> {
+                        const lowerInput = input.toLowerCase();
+                        const valid = lowerInput === "y" || lowerInput === "n" ;
+                        if (!valid) {
+                            return "Please answer either y or n"
+                        }
+                        return valid
+                    },
+                }])
+                del = Util.getBoolFromYesNo(answer.delete);
             }
 
-            spinner.succeed(`${modToUninstall.name} successfully uninstalled!`)
+            // If we are deleting this mod, uninstall it
+            if (del) {
+                spinner.start()
+                this.silentUninstall(modToUninstall);
+
+                // Remove any left over dependencies that are not depended on by any other mod
+                for (let dependency of modToUninstall.dependencies) {
+                    if (!this.isDependedOn(dependency)) {
+                        const dependencyMod = this.findMod(dependency);
+                        if (dependencyMod != undefined) {
+                            this.silentUninstall(dependencyMod)
+                        }
+                    }
+                }
+
+                spinner.succeed(`${modToUninstall.name} successfully uninstalled!`)
+            }
+
         } else {
             spinner.error(`${mod} was not found.`)
         }
@@ -366,13 +403,14 @@ export default class Mods {
     }
 
     private static isDependedOn(dependency: string) {
-        const trackedMods = this.getTrackedMods();
+        return Mods.getDependantMods(dependency).length != 0
+    }
 
-        for (let trackedMod of trackedMods) {
-            if (trackedMod.dependencies.includes(dependency)) {
-                return true;
-            }
+    private static modListToSting(dependantMods: TrackedMod[]) {
+        const builder = new StringBuilder();
+        for (let dependantMod of dependantMods) {
+            builder.Append(dependantMod.name)
         }
-        return false;
+        return builder.ToString();
     }
 }

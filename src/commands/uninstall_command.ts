@@ -9,9 +9,9 @@ export default class UninstallCommand implements Subcommand {
             .description("Uninstalls the provided mods")
             .argument("<mods...>", "The mods to uninstall (as names or ids)")
             .action((mods) => {
-                ModManager.execute(() => {
+                ModManager.execute(async () => {
                     for (let mod of mods) {
-                        Mods.uninstall(mod);
+                        await Mods.uninstall(mod);
                     }
                 })
             })

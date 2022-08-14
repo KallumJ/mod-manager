@@ -21,4 +21,14 @@ export default class Util {
         compare = compare.toLowerCase();
         return stringSimilarity(master, compare) >= this.SIMILARITY_THRESHOLD;
     }
+
+    static getBoolFromYesNo(answer: string) {
+        if (answer.toLowerCase() === "y") {
+            return true;
+        } else if (answer.toLowerCase() === "n") {
+            return false
+        } else {
+            throw new Error("Invalid answer to get a boolean value from")
+        }
+    }
 }
