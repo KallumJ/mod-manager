@@ -1,7 +1,7 @@
 import axios from "axios";
 import ModSource from "./mod_source.js";
 import Util from "../../util/util.js";
-import { ForgejoFile, ForgejoFiles, ForgejoPackage as ForgejoSearchResponse } from "../../types/forgejo.js";
+import { ForgejoFile, ForgejoFiles, ForgejoPackage } from "../../types/forgejo.js";
 import { parse } from "properties-parser"
 import ModNotFoundError from "../../errors/mod_not_found_error.js";
 import MinecraftUtils from "../../util/minecraft_utils.js";
@@ -17,7 +17,7 @@ export default class ForgejoSource implements ModSource {
     private static readonly REPO_URL: string = ForgejoSource.BASE_URL + "/repositories/%s"
     private static readonly FILES_URL: string = ForgejoSource.BASE_URL + "/packages/%s/%s/%s/%s/files"
 
-    private async findPackage(query: string, mcVersion: string): Promise<{package: ForgejoSearchResponse, project_id: string} | undefined> {
+    private async findPackage(query: string, mcVersion: string): Promise<{package: ForgejoPackage, project_id: string} | undefined> {
         let page = 1;
         let pagesLeft = true;
         while (pagesLeft) {
@@ -27,7 +27,7 @@ export default class ForgejoSource implements ModSource {
                 q: query,
                 page
             }
-            const response: ForgejoSearchResponse[] = await this.makeRequest(ForgejoSource.SEARCH_URL, params);
+            const response: ForgejoPackage[] = await this.makeRequest(ForgejoSource.SEARCH_URL, params);
 
             for (const mod of response) {
                 const versionParams = {
