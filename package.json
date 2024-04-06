@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx tsc",
+    "dev": "node ./build/ts/mod-manager.js",
+    "debug": "npm run build && npm run dev test"
   },
   "keywords": [],
   "author": "",
@@ -25,7 +27,7 @@
     "typescript-string-operations": "^1.4.1"
   },
   "devDependencies": {
-    "@types/node": "^18.6.3",
-    "typescript": "^4.7.4"
+    "@types/node": "^18.19.30",
+    "typescript": "^4.9.5"
   }
 }
