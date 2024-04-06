@@ -77,6 +77,6 @@ The following are the required environment variables for running Mod Manager
 Mod Manager can be installed with the following command (watch out for the sudo password prompt, it can be hard to spot)
 
 ```bash
-curl https://hogwarts.bits.team/git/Bits/mod-manager/raw/branch/master/install.sh | sudo -E env "PATH=$PATH" bash
+curl https://git.bits.team/Bits/mod-manager/raw/branch/master/install.sh | sudo -E env "PATH=$PATH" bash
 ```
     
