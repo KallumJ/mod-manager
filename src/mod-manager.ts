@@ -19,6 +19,7 @@ import Mods from "./mods/mods.js";
 import {CurseforgeSource} from "./mods/sources/curseforge_source.js";
 import MinecraftUtils from "./util/minecraft_utils.js";
 import chalk from "chalk";
+import ForgejoSource from "./mods/sources/forgejo_source.js";
 
 export default class ModManager {
     public static logger: Logger | null = null;
@@ -63,6 +64,7 @@ export default class ModManager {
 
         Mods.registerSource(new ModrinthSource())
         Mods.registerSource(new CurseforgeSource(), "CURSEFORGE_API_KEY")
+        Mods.registerSource(new ForgejoSource(), "FORGEJO_API_KEY")
 
         this.program.showSuggestionAfterError();
         this.program.showHelpAfterError();
