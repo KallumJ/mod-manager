@@ -2,7 +2,6 @@ import axios from "axios";
 import ModSource from "./mod_source.js";
 import Util from "../../util/util.js";
 import { ForgejoFile, ForgejoFiles, ForgejoPackage } from "../../types/forgejo.js";
-import { parse } from "properties-parser"
 import ModNotFoundError from "../../errors/mod_not_found_error.js";
 import MinecraftUtils from "../../util/minecraft_utils.js";
 import { format } from "util";
@@ -13,9 +12,20 @@ import DownloadError from "../../errors/download_error.js";
 export default class ForgejoSource implements ModSource {
     private static readonly BASE_URL: string = "https://git.bits.team/api/v1";
     private static readonly SEARCH_URL: string = ForgejoSource.BASE_URL + "/packages/Bits"
-    private static readonly VERSION_URL: string = ForgejoSource.BASE_URL + "/repos/%s/%s/media/gradle.properties"
     private static readonly REPO_URL: string = ForgejoSource.BASE_URL + "/repositories/%s"
     private static readonly FILES_URL: string = ForgejoSource.BASE_URL + "/packages/%s/%s/%s/%s/files"
+    private static readonly MC_VERSION_REGEX: RegExp = /(?<=-)[\d.]+(?:-[\w]+)?(?=-)/;
+    private static readonly BRANCH_REGEX: RegExp = /^([^-\s]+)/;
+
+    private match(packageVersion: string, regex: RegExp): string {
+        const match = regex.exec(packageVersion)
+
+        if (match) {
+            return match[0]
+        } else {
+            return ""
+        }
+    }
 
     private async findPackage(query: string, mcVersion: string): Promise<{package: ForgejoPackage, project_id: string} | undefined> {
         let page = 1;
@@ -30,16 +40,10 @@ export default class ForgejoSource implements ModSource {
             const response: ForgejoPackage[] = await this.makeRequest(ForgejoSource.SEARCH_URL, params);
 
             for (const mod of response) {
-                const versionParams = {
-                    ref: mod.version
-                }
+                const packageVersion = this.match(mod.version, ForgejoSource.MC_VERSION_REGEX)
+                const branch = this.match(mod.version, ForgejoSource.BRANCH_REGEX);
 
-                const url = format(ForgejoSource.VERSION_URL, mod.owner.username, mod.repository.name)
-
-                const versionResponse = await this.makeRequest(url, versionParams).catch(_ => "");
-                const ver = parse(versionResponse)
-
-                if (ver["minecraft_version"] == mcVersion) {
+                if (packageVersion == mcVersion && branch == mod.repository.default_branch) {
                     return {
                         package: mod, 
                         project_id: mod.repository.id.toString()
@@ -57,7 +61,7 @@ export default class ForgejoSource implements ModSource {
         return undefined;
     }
 
-    async search(query: string = "BitsVanilla"): Promise<string> {
+    async search(query: string): Promise<string> {
         const mcVersion = await MinecraftUtils.getCurrentMinecraftVersion();
 
         let mod = await this.findPackage(query, mcVersion);
@@ -94,11 +98,13 @@ export default class ForgejoSource implements ModSource {
     getSourceName(): string {
         return "Forgejo";
     }
+    
     async getProjectName(id: string): Promise<string> {
         const response = await this.makeRequest(format(ForgejoSource.REPO_URL, id))
         return response.name;
     }
-    async getLatestVersion(id: string = "34", mcVersion: string = "24w13a"): Promise<Version> {
+    
+    async getLatestVersion(id: string, mcVersion: string): Promise<Version> {
         const projectName = await this.getProjectName(id)
 
         const mod = await this.findPackage(projectName, mcVersion)
