@@ -13,12 +13,12 @@ import chalk from "chalk";
 export default class Mods {
     private static readonly MOD_SOURCES: Array<ModSource> = [];
 
-    public static registerSource(source: ModSource, envVar?: string) {
-        if (envVar != undefined) {
-            if (!process.env.hasOwnProperty(envVar)) {
+    public static registerSource(source: ModSource, envVar?: string, suppressWarning?: boolean) {
+        if (envVar && !process.env.hasOwnProperty(envVar)) {
+            if (!suppressWarning)
                 PrintUtils.warn(`${source.getSourceName()} could not be registered as a mod source, as the required environment variable ${envVar} was not detected. Functionality related to ${source.getSourceName()} will be skipped.`)
-                return;
-            }
+            
+            return;
         }
         this.MOD_SOURCES.push(source);
     }

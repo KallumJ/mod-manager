@@ -64,7 +64,7 @@ export default class ModManager {
 
         Mods.registerSource(new ModrinthSource())
         Mods.registerSource(new CurseforgeSource(), "CURSEFORGE_API_KEY")
-        Mods.registerSource(new ForgejoSource(), "FORGEJO_API_KEY")
+        Mods.registerSource(new ForgejoSource(), "FORGEJO_API_KEY", true)
 
         this.program.showSuggestionAfterError();
         this.program.showHelpAfterError();
